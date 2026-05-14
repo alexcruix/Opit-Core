@@ -74,4 +74,4 @@ Para garantir a melhor estabilidade e atualizações automáticas, utilize a ver
 * **Restauração Automática:** Em caso de fecho inesperado, o sistema recupera o "Baseline" (estado original) no próximo arranque.
 
 ---
-*Desenvolvido com foco em performance e eficiência por **Alex Camilo**.*
+*Desenvolvido com foco em performance e eficiência por **ACSTCLab**.*
