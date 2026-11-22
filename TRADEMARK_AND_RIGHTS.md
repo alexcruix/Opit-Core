@@ -1,21 +1,21 @@
-# Política de Marca Registrada, Direitos Autorais e Termos Adicionais (Seção 7 da GPL-3.0)
+# Política de Marca Registrada, Família de Marcas (Opit-*), Direitos Autorais e Termos Adicionais (Seção 7 da GPL-3.0)
 
-**Projeto:** Opit-Core  
-**Titular Exclusiva dos Direitos Autorais e Marcas:** ACSTCLab (`alexcstos@gmail.com`)  
-**Licença Base do Código-Fonte:** GNU General Public License v3.0 (`GPL-3.0-only`)  
-**Jurisdição e Legislação Aplicável:** República Federativa do Brasil (Leis Federais nº 9.609/1998, nº 9.610/1998 e nº 9.279/1996) e Convenção Internacional de Berna.
+**Ecossistema e Projeto:** Opit-Core e Família de Softwares `Opit-*`  
+**Titular Exclusiva dos Direitos Autorais, Marcas e Ecossistema:** ACSTCLab (`alexcstos@gmail.com`)  
+**Licença Base do Código-Fonte do Opit-Core:** GNU General Public License v3.0 (`GPL-3.0-only`)  
+**Jurisdição e Legislação Aplicável:** República Federativa do Brasil (Leis Federais nº 9.609/1998, nº 9.610/1998, nº 9.279/1996 e Código Civil Brasileiro) e Convenção Internacional de Berna.
 
 ---
 
 ## 1. Titularidade Exclusiva e Reserva de Direitos Comerciais (Dual-Licensing)
 
-Todo o código-fonte original, arquitetura, algoritmos de decisão, documentação e identidade visual do **Opit-Core** são de propriedade intelectual exclusiva da **ACSTCLab** (`Copyright (C) 2026 ACSTCLab`).
+Todo o código-fonte original, arquitetura, algoritmos de decisão em malha fechada, documentação e identidade visual (*Trade Dress*) do **Opit-Core** são de propriedade intelectual exclusiva da **ACSTCLab** (`Copyright (C) 2026 ACSTCLab`).
 
-1. **Liberdade de Uso sob GPL-3.0:** O código-fonte publicado neste repositório é disponibilizado ao público sob os termos da **GNU General Public License v3.0 (GPL-3.0-only)**, estritamente condicionado ao cumprimento das restrições adicionais da **Seção 7** descritas neste documento.
-2. **Exclusividade de Assinatura e Licenciamento Proprietário:** Como única detentora original do Copyright do software, **somente a ACSTCLab** possui o direito legal e exclusivo de:
-   - Relicenciar o **Opit-Core** sob termos comerciais ou proprietários (código fechado);
-   - Comercializar assinaturas, chaves de ativação, versões "Pro/Enterprise", pacotes SaaS ou serviços pagos vinculados ao software oficial;
-   - Fechar o código de versões futuras de sua própria autoria.
+1. **Liberdade de Uso sob GPL-3.0:** O código-fonte publicado neste repositório é disponibilizado ao público sob os termos da **GNU General Public License v3.0 (GPL-3.0-only)**, estritamente condicionado ao cumprimento integral das restrições adicionais da **Seção 7** descritas neste instrumento.
+2. **Exclusividade de Assinatura e Licenciamento Proprietário (*Dual-Licensing*):** Como única detentora originária da totalidade do Copyright do software, **somente a ACSTCLab** possui o direito legal e exclusivo de:
+   - Relicenciar o **Opit-Core** (ou qualquer módulo/derivado seu) sob termos comerciais ou proprietários (código fechado);
+   - Comercializar assinaturas, chaves de ativação, edições "Pro / Enterprise / Ultimate", pacotes SaaS ou serviços pagos vinculados ao software oficial e à família de softwares **`Opit-*`**;
+   - Fechar o código-fonte de versões futuras ou de outros produtos da família **`Opit-*`** de sua própria autoria.
 3. **Proibição de Apropriação Comercial Fechada por Terceiros:** Nenhum terceiro (pessoa física ou jurídica) pode fechar este código-fonte, embutir sistemas de cobrança/assinatura proprietários, empacotá-lo em "otimizadores pagos", remover avisos de autoria ou distribuir derivados sob licença diferente da GPL-3.0.
 
 ---
@@ -24,22 +24,34 @@ Todo o código-fonte original, arquitetura, algoritmos de decisão, documentaç�
 
 Em conformidade expressa com as alíneas **(b)**, **(c)**, **(d)**, **(e)** e **(f)** da **Seção 7 (*Additional Terms*)** da *GNU General Public License v3.0*, ficam estabelecidas as seguintes condições obrigatórias para qualquer usuário, desenvolvedor ou empresa:
 
-### 2.1. Reserva Estrita de Marca, Nome e Logotipos — Seção 7(e)
-A concessão de direitos sobre o código-fonte sob a GPL-3.0 **NÃO inclui, em nenhuma hipótese, licença ou autorização para uso de marcas registradas, nomes comerciais, marcas de serviço ou identidade visual da ACSTCLab**.
+### 2.1. Reserva Estrita da Família de Marcas (`Opit-*`), Nomes e Logotipos — Seção 7(e)
+A concessão de direitos sobre o código-fonte sob a GPL-3.0 **NÃO inclui, em nenhuma hipótese, licença ou autorização para uso de marcas registradas, nomes comerciais, família de marcas, marcas de serviço, identidade visual (*Trade Dress*) ou domínios da ACSTCLab**.
 
-São marcas, nomes e ativos visuais exclusivos da **ACSTCLab**:
-- Os nomes **"Opit-Core"**, **"OpitCore"**, **"Opit Core"**;
-- O nome empresarial e marca **"ACSTCLab"** e **"ACSTC Lab"**;
-- Todos os logotipos, emblemas e ícones gráficos contidos no diretório `assets/` e embutidos nos recursos do executável (`OpitCore.rc`).
+São marcas, nomes comerciais e reservas oficiais de ecossistema de **titularidade e uso exclusivo da ACSTCLab**:
+1. **Marca Institucional:** **"ACSTCLab"**, **"ACSTC Lab"** e **"ACSTC"**;
+2. **Produto Principal:** **"Opit-Core"**, **"OpitCore"** e **"Opit Core"**;
+3. **Família de Marcas Reservadas do Ecossistema (`Opit-*`):**
+   - **"Opit-Graphics"**, **"Opit-Graphic"**, **"Opit-Grafic"**, **"Opit-Grafics"**, **"OpitGraphics"** e **"OpitGraphic"**;
+   - **"Opit-Sound"**, **"OpitSound"** e **"Opit-Audio"**;
+   - **"Opit-AI"**, **"Opit-AI Engine"**, **"OpitAI"**;
+   - **"Opit-Network"**, **"Opit-Net"**, **"Opit-Memory"**, **"Opit-RAM"**, **"Opit-Storage"**, **"Opit-Disk"**, **"Opit-Fan"**, **"Opit-Thermal"**, **"Opit-Power"**, **"Opit-Boost"**, **"Opit-Engine"**, **"Opit-Studio"**, **"Opit-Pro"**;
+   - **Qualquer outra denominação comercial de software ou serviço iniciada pelo prefixo `"Opit-"` ou `"Opit"`** vinculada a ferramentas de sistema, hardware, áudio, vídeo, gráficos, jogos, diagnóstico ou otimização de computadores.
+4. **Identidade Visual e *Trade Dress*:** Todos os logotipos, emblemas, ícones gráficos contidos em `assets/` (e embutidos em `OpitCore.rc`) e a disposição visual característica (*Trade Dress*) da interface da **ACSTCLab**;
+5. **Domínios de Internet e Identificadores Digitais Reservados (`ACSTCLab.*` e `Opit-*.*`):**
+   - **`acstclab.com`**, **`acstclab.com.br`**, **`acstclab.org`**, **`acstclab.net`**, **`acstclab.io`**, **`acstclab.dev`**, **`acstclab.app`**, **`acstclab.tech`** e **qualquer outro domínio ou subdomínio sob qualquer extensão de topo (gTLD ou ccTLD) no formato `acstclab.*` ou `acstc.*`** (nota: `acstclab.com` já consta inclusive codificado como namespace oficial de produção dentro do código-fonte do projeto em `src/core/RecoveryCoordinator.h`);
+   - **`opitcore.com`**, **`opitcore.com.br`**, **`opit-core.com`**, **`opit-core.com.br`** e qualquer domínio sob qualquer extensão no formato **`opitcore.*`**, **`opit-core.*`**, **`opitgraphics.*`**, **`opit-graphics.*`**, **`opitsound.*`**, **`opit-sound.*`** ou **`opit-*.*`**.
 
-**Consequência Legal Obrigatória:**
-- **É estritamente proibido a qualquer terceiro** vender, cobrar assinatura, anunciar, distribuir comercialmente, oferecer como serviço pago ou publicar versões modificadas (*forks*) ou pacotes compilados utilizando os nomes **"Opit-Core"** ou **"ACSTCLab"**, ou utilizando os logotipos oficiais do projeto.
-- Caso qualquer terceiro deseje distribuir uma versão modificada ou derivada nos termos da GPL-3.0, **é obrigatório realizar o rebranding completo (mudança total de nome e remoção de todos os logotipos e ícones da ACSTCLab / Opit-Core)** antes de qualquer distribuição, mantendo apenas os créditos internos de autoria original exigidos na Seção 2.2 abaixo.
+**Consequências Legais Obrigatórias (Proibições Expressas a Terceiros):**
+- **Proibição de Uso dos Nomes e da Família `Opit-*`:** É estritamente proibido a qualquer terceiro vender, cobrar assinatura, anunciar, distribuir comercialmente, criar *forks* ou lançar softwares concorrentes ou derivados utilizando o nome **"Opit-Core"**, **"Opit-Graphics" / "Opit-Graphic" / "Opit-Grafic"**, **"Opit-Sound"** ou qualquer variação da família **`Opit-*`** e **"ACSTCLab"**.
+- **Obrigação de Rebranding Total em Forks/Modificações:** Caso qualquer terceiro deseje distribuir uma versão modificada ou derivada do código-fonte nos termos da GPL-3.0, **é obrigatório realizar o rebranding completo (mudança total de nome para um nome que NÃO contenha o prefixo `Opit` nem `ACSTC`, além da remoção total de todos os logotipos e ícones da ACSTCLab)** antes de qualquer distribuição pública ou privada.
+- **Proibição de Sequestro de Domínios (`ACSTCLab.*` / `Opit-*.*`), Lojas de Aplicativos e Gerenciadores de Pacotes (*Anti-Cybersquatting / Anti-Hijacking*):**
+  - É estritamente proibido a qualquer terceiro registrar, adquirir, hospedar ou utilizar domínios de internet no formato **`acstclab.com`**, **`acstclab.com.br`**, **`acstclab.*`**, **`opitcore.*`**, **`opit-core.*`** ou **`opit-*.*`** para distribuir software, captar usuários, vender serviços ou simular vínculo com o projeto. Qualquer registro de tais domínios por terceiros após a publicação deste repositório caracteriza **registro de má-fé (*Cybersquatting*), falsidade ideológica e concorrência desleal (Art. 195 da Lei nº 9.279/96)**, sujeito a transferência compulsória ou cancelamento imediato via **SACI-Adm (Registro.br)** e **UDRP (ICANN)**.
+  - Nenhum terceiro está autorizado a publicar este software (ou derivados) sob os nomes **`Opit-*`** ou **`ACSTCLab`** na **Microsoft Store**, **Steam**, **Epic Games Store**, **Winget**, **Chocolatey**, **Scoop**, páginas web ou perfis de redes sociais sem autorização expressa e por escrito da **ACSTCLab**.
 
 ### 2.2. Preservação de Avisos Legais e Proibição de Falsa Origem — Seções 7(b), 7(c) e 7(d)
 - É proibido remover, ocultar ou alterar qualquer aviso de `Copyright (C) 2026 ACSTCLab` presente no código-fonte, cabeçalhos, documentação ou registros técnicos.
 - É proibido deturpar a origem do software ou afirmar falsamente ter criado o motor original do **Opit-Core**.
-- Qualquer versão modificada por terceiros deve conter aviso explícito e visível de que foi alterada e de que **não é uma versão oficial da ACSTCLab**, não podendo sugerir endosso, garantia ou afiliação com a autora original.
+- Qualquer versão modificada por terceiros (já devidamente renomeada sem usar o prefixo `Opit-*`) deve conter aviso explícito e visível na documentação e na tela "Sobre" de que é uma versão não-oficial baseada no código aberto originalmente desenvolvido pela **ACSTCLab**, não podendo sugerir endosso, garantia ou afiliação com a autora original.
 
 ### 2.3. Obrigação de Indenização por Terceiros Redistribuidores — Seção 7(f)
 Nos termos da **Seção 7(f) da GPL-3.0**, qualquer pessoa física ou jurídica que distribuir, redistribuir, comercializar suporte ou modificar este software (com ou sem modificações) **assume integral e exclusivamente todos os riscos e responsabilidades legais perante os destinatários e terceiros**, obrigando-se a **indenizar, defender e isentar a ACSTCLab e sua autora** de quaisquer reclamações, processos judiciais, multas, custos processuais, honorários advocatícios ou danos decorrentes dessa distribuição ou modificação.
@@ -51,13 +63,20 @@ Nos termos da **Seção 7(f) da GPL-3.0**, qualquer pessoa física ou jurídica 
 Para fins de interpretação da **Seção 0 ("Modify" / "Based on the Program")** e da **Seção 5 da GPL-3.0**, combinadas com o **Art. 5º, inciso VIII, alínea "g" da Lei Federal nº 9.610/1998 (Obra Derivada)**:
 
 1. Qualquer software, módulo, script ou código-fonte gerado total ou parcialmente com o auxílio de sistemas de Inteligência Artificial (incluindo LLMs, agentes autônomos de codificação, ferramentas de descompilação assistida por IA, inspeção de memória em tempo de execução ou tradução automatizada entre linguagens de programação) que utilize o código-fonte, os binários, a arquitetura de subsistemas ou os fluxos de memória do **Opit-Core** como entrada (*prompt*, contexto, referência ou engenharia reversa) **constitui juridicamente Obra Derivada do Opit-Core**.
-2. Toda Obra Derivada gerada por IA ou refatoração automatizada está **obrigatoriamente vinculada à licença GPL-3.0 e a estes Termos Adicionais**, sendo **ilegal** o seu fechamento em código proprietário, a remoção dos créditos da **ACSTCLab** ou a sua comercialização sob licença fechada.
+2. Toda Obra Derivada gerada por IA ou refatoração automatizada está **obrigatoriamente vinculada à licença GPL-3.0 e a estes Termos Adicionais**, sendo **ilegal** o seu fechamento em código proprietário, a remoção dos créditos da **ACSTCLab**, o uso de qualquer nome da família **`Opit-*`** ou a sua comercialização sob licença fechada.
 
 ---
 
-## 4. Prova Criptográfica Oficial de Autoria e Anterioridade (RSA-2048)
+## 4. Proteção Antipatenteamento Ofensivo por Terceiros (Seção 11 da GPL-3.0)
 
-Para fins de prova pericial judicial e extrajudicial de autoria original e anterioridade (Art. 369 do Código de Processo Civil Brasileiro), fica registrado que a titularidade legítima e originária do projeto **Opit-Core** e da marca **ACSTCLab** é vinculada matematicamente à posse da **Chave Privada RSA-2048** correspondente à **Chave Pública Oficial SPKI (ASN.1 Base64)** embutida no código-fonte ([`src/security/ManifestVerifier.cpp`](src/security/ManifestVerifier.cpp)):
+1. Nenhuma pessoa física ou jurídica está autorizada a requerer registro de patente, modelo de utilidade ou desenho industrial em qualquer jurisdição sobre os métodos, algoritmos, arquitetura de malha fechada, governadores ou interface contidos no **Opit-Core**.
+2. Nos termos da **Seção 8 e Seção 11 da GPL-3.0**, caso qualquer entidade inicie litígio de patente ou propriedade intelectual alegando que o **Opit-Core** infringe qualquer direito, ou tente registrar para si marca da família **`Opit-*`** ou **`ACSTCLab`**, todos os direitos concedidos a essa entidade sob esta licença serão **imediatamente e retroativamente rescindidos**.
+
+---
+
+## 5. Prova Criptográfica Oficial de Autoria e Anterioridade (RSA-2048)
+
+Para fins de prova pericial judicial e extrajudicial de autoria original, anterioridade e direito de precedência (Art. 369 do Código de Processo Civil Brasileiro e Art. 129, § 1º da Lei nº 9.279/1996), fica registrado que a titularidade legítima e originária do projeto **Opit-Core**, da família de marcas **`Opit-*`** (`Opit-Graphics`, `Opit-Graphic`, `Opit-Grafic`, `Opit-Sound` e demais) e da marca **ACSTCLab** é vinculada matematicamente à posse da **Chave Privada RSA-2048** correspondente à **Chave Pública Oficial SPKI (ASN.1 Base64)** embutida no código-fonte ([`src/security/ManifestVerifier.cpp`](src/security/ManifestVerifier.cpp)):
 
 ```text
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvDdQueeRVcvikbWkysOX
@@ -69,21 +88,22 @@ VrpDrqRJtHWnwXzbIICBV+VQsq4g33PN7yXAOtps58LLrctEMjWflQcJXJzJ6PJp
 yQIDAQAB
 ```
 
-Qualquer terceiro que reivindique autoria ou propriedade sobre o software sem possuir a chave privada criptográfica capaz de assinar digitalmente payloads verificáveis por esta chave pública oficial incorre em falsidade ideológica e violação de direito autoral.
+Qualquer terceiro que reivindique autoria ou propriedade sobre o software ou sobre a família de marcas **`Opit-*`** sem possuir a chave privada criptográfica capaz de assinar digitalmente payloads verificáveis por esta chave pública oficial incorre em falsidade ideológica, concorrência desleal (Art. 195 da Lei nº 9.279/96) e violação de direito autoral.
 
 ---
 
-## 5. Acordo de Contribuição (CLA — Contributor License Agreement)
+## 6. Acordo de Contribuição (CLA — Contributor License Agreement)
 
 Ao submeter qualquer código, *patch*, *Pull Request* ou documentação para o repositório oficial do **Opit-Core**, o contribuidor concorda irrevogavelmente que:
 1. O conteúdo submetido é de sua criação original e não viola direitos de terceiros;
-2. Concede à **ACSTCLab** uma licença perpétua, mundial, não-exclusiva, gratuita, irrestrita e irrevogável para usar, reproduzir, modificar, sublicenciar e **relicenciar comercialmente (inclusive em versões futuras de código fechado ou por assinatura exclusiva da ACSTCLab)** a contribuição enviada, sem qualquer direito a royalties, participação ou compensação financeira;
+2. Concede à **ACSTCLab** uma licença perpétua, mundial, não-exclusiva, gratuita, irrestrita e irrevogável para usar, reproduzir, modificar, sublicenciar e **relicenciar comercialmente (inclusive em versões futuras de código fechado, por assinatura ou em outros softwares da família `Opit-*` como `Opit-Graphics` e `Opit-Sound` exclusivos da ACSTCLab)** a contribuição enviada, sem qualquer direito a royalties, participação ou compensação financeira;
 3. A contribuição também permanecerá disponível ao público no repositório aberto sob os termos da GPL-3.0.
 
 ---
 
-## 6. Isenção Total de Garantias, Limitação de Responsabilidade e Foro (Seções 15 e 16)
+## 7. Isenção Total de Garantias, Rescisão, Independência das Cláusulas e Foro
 
-1. **Sem Garantias ou Obrigação de Suporte:** O **Opit-Core** é disponibilizado gratuitamente no estado em que se encontra (*"AS IS"*). Nenhum usuário, empresa ou terceiro possui qualquer direito legal ou contratual de exigir suporte técnico, correções de bugs, atualizações, manutenção ou indenizações por danos diretos, indiretos, incidentais ou consequenciais (incluindo instabilidade de hardware, telas azuis ou perda de dados) decorrentes do uso do software.
-2. **Rescisão Automática por Violação (Seção 8 da GPL-3.0):** Qualquer tentativa de violar estes Termos Adicionais, fechar o código, comercializar indevidamente a marca **Opit-Core / ACSTCLab** ou contestar a titularidade da autora resulta na **rescisão imediata e automática** de todos os direitos concedidos ao infrator sob a GPL-3.0, sujeitando-o às medidas judiciais de busca, apreensão, remoção (DMCA/Takedown) e indenização por perdas e danos.
-3. **Legislação Aplicável e Foro Judicial:** Este instrumento e a licença aplicável são regidos pelas leis da **República Federativa do Brasil** (Lei do Software nº 9.609/98, Lei de Direitos Autorais nº 9.610/98 e Lei da Propriedade Industrial nº 9.279/96). Fica eleito o **Foro da Comarca do domicílio da titular da ACSTCLab, no Brasil**, com renúncia expressa a qualquer outro, por mais privilegiado que seja, para dirimir quaisquer controvérsias oriundas deste software.
+1. **Sem Garantias ou Obrigação de Suporte (Seções 15 e 16):** O **Opit-Core** é disponibilizado gratuitamente no estado em que se encontra (*"AS IS"*). Nenhum usuário, empresa ou terceiro possui qualquer direito legal ou contratual de exigir suporte técnico, correções de bugs, atualizações, manutenção ou indenizações por danos diretos, indiretos, incidentais ou consequenciais (incluindo instabilidade de hardware, telas azuis ou perda de dados) decorrentes do uso do software.
+2. **Rescisão Automática por Violação (Seção 8 da GPL-3.0):** Qualquer tentativa de violar estes Termos Adicionais, fechar o código, comercializar indevidamente as marcas **ACSTCLab**, **Opit-Core**, **Opit-Graphics / Opit-Graphic / Opit-Grafic**, **Opit-Sound** ou qualquer variação **`Opit-*`**, ou contestar a titularidade da autora resulta na **rescisão imediata e automática** de todos os direitos concedidos ao infrator sob a GPL-3.0, sujeitando-o às medidas judiciais de busca, apreensão, remoção (DMCA/Takedown) e indenização por perdas e danos.
+3. **Independência das Cláusulas (*Severability*) e Não-Renúncia (*No Waiver*):** Caso qualquer disposição deste documento seja considerada parcialmente inexequível em determinada jurisdição, ela será aplicada na extensão máxima permitida pela lei local, permanecendo todas as demais cláusulas em pleno vigor e efeito. A tolerância da **ACSTCLab** quanto a eventual infração não implicará novação ou renúncia de direitos.
+4. **Legislação Aplicável e Foro Judicial:** Este instrumento e a licença aplicável são regidos pelas leis da **República Federativa do Brasil** (Lei do Software nº 9.609/98, Lei de Direitos Autorais nº 9.610/98 e Lei da Propriedade Industrial nº 9.279/96). Fica eleito o **Foro da Comarca do domicílio da titular da ACSTCLab, no Brasil**, com renúncia expressa a qualquer outro, por mais privilegiado que seja, para dirimir quaisquer controvérsias oriundas deste software ou da família de marcas **`Opit-*`**.
