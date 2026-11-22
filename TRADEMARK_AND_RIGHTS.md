@@ -67,19 +67,45 @@ Nos termos da **Seção 7(f) da GPL-3.0**, qualquer pessoa física ou jurídica 
 
 ---
 
-## 3. Proteção Contra Clonagem e Derivação Fechada Assistida por Inteligência Artificial (IA)
+## 3. Proteção da Arquitetura, Comportamento do Orquestrador (SSO) e Contra Clonagem por IA
 
-Para fins de interpretação da **Seção 0 ("Modify" / "Based on the Program")** e da **Seção 5 da GPL-3.0**, combinadas com o **Art. 5º, inciso VIII, alínea "g" da Lei Federal nº 9.610/1998 (Obra Derivada)**:
+Para fins de interpretação da **Seção 0 ("Modify" / "Based on the Program")** e da **Seção 5 da GPL-3.0**, combinadas com o **Art. 5º, inciso VIII, alínea "g" e Art. 7º, inciso XII da Lei Federal nº 9.610/1998** e a doutrina jurídica internacional de proteção da **Estrutura, Sequência e Organização (*SSO — Structure, Sequence, and Organization*)**:
 
-1. Qualquer software, módulo, script ou código-fonte gerado total ou parcialmente com o auxílio de sistemas de Inteligência Artificial (incluindo LLMs, agentes autônomos de codificação, ferramentas de descompilação assistida por IA, inspeção de memória em tempo de execução ou tradução automatizada entre linguagens de programação) que utilize o código-fonte, os binários, a arquitetura de subsistemas ou os fluxos de memória do **Opit-Core** como entrada (*prompt*, contexto, referência ou engenharia reversa) **constitui juridicamente Obra Derivada do Opit-Core**.
-2. Toda Obra Derivada gerada por IA ou refatoração automatizada está **obrigatoriamente vinculada à licença GPL-3.0 e a estes Termos Adicionais**, sendo **ilegal** o seu fechamento em código proprietário, a remoção dos créditos da **ACSTCLab**, o uso de qualquer nome da família **`Opit-*`** ou a sua comercialização sob licença fechada.
+### 3.1. Registro de Autoria sobre o Comportamento e Pipeline do Orquestrador Opit-Core
+A proteção de direito autoral do **Opit-Core** não se limita ao texto literal em C++17, abrangendo integralmente a **Estrutura, Sequência, Organização (SSO), Máquina de Estados e Comportamento Sistêmico do seu Orquestrador Adaptativo**, caracterizado pela combinação original dos seguintes mecanismos criados pela **ACSTCLab**:
+1. **Pipeline Determinístico em Malha Fechada de 4 Estágios:**
+   - *(i) Observação Multimodal Concorrente* (telemetria correlacionada de topologia CPU/SMBIOS, potência e carga de GPU via NVAPI/ADL, pressão de memória, E/S, sensores térmicos Super I/O e tempo de quadro DWM/DXGI);
+   - *(ii) Diagnóstico Adaptativo de Gargalo Dominante* com máquina de estados dotada de janelas de estabilização, histerese assimétrica, orçamento de atuação (*action budget*) e trava anti-vaivém (*anti-thrashing lock*);
+   - *(iii) Execução Coordenada Multi-Domínio* atuando simultaneamente e sem overclocking sobre políticas ACPI/PPM (limites Min/Max AC/DC e *Core Parking*), Governador de Prioridades de Processos com lista de proteção crítica, Governador de Estados de Serviços (SCM) e Controlador de Curvas Termo-Acústicas PWM;
+   - *(iv) Verificação Pós-Execução Baseada em Evidência (Proof-of-Change)*, onde cada transição lê o estado real do sistema operacional antes e depois da chamada, recusando contabilizar alterações não comprovadas e alimentando uma Função-Objetivo (*Objective Function*) mensurável.
+2. **Diário Transacional de Reversão Exata (*Transactional Rollback Journal* em SQLite3):**
+   O comportamento de captura prévia e persistência atômica do estado exato de origem de cada recurso do sistema operacional antes de qualquer mutação, garantindo restauração matemática bit-a-bit no encerramento normal ou na recuperação pós-falha (*crash recovery*).
+3. **Guardião Térmico Autônomo de Degradação Progressiva:**
+   O acoplamento direto entre a proteção térmica preditiva, o controlador de segurança de ventoinhas (`FanSafetyController`) e o recuo escalonado das políticas de potência do orquestrador.
+4. **Esquema de Banco de Dados, Persistência e Manifesto Criptográfico (Art. 7º, XIII da Lei nº 9.610/1998):**
+   A estrutura, organização e esquema (*schema*) das tabelas SQLite3 do núcleo, o formato de serialização de perfis e auditoria, e a estrutura do manifesto assinado (`opit_manifest.json` / `opit_manifest.sig`).
+5. **Arquitetura de Ponte Isolada de Sensores (`OpitLhmBridge` — C ABI sobre C++/CLI):**
+   O padrão arquitetural de isolamento completo do runtime `.NET Framework` em biblioteca satélite carregada dinamicamente via ABI C pura (`OpitLhmBridge.h`), preservando o executável principal 100% em código nativo C++17 sem contaminação CLR, combinado ao fallback transparente entre provedores nativos (ACPI/WMI, NVIDIA NVAPI, AMD ADL, Intel e SMBIOS direto).
+6. **Arquitetura de Segurança Defensiva em Camadas e Sanitização de Privacidade (`src/security/`):**
+   A combinação integrada de: *(a)* baseline *eager* em memória da seção executável `.text` pós-relocação ASLR (`AntiReverseEngineering`); *(b)* verificação de assinatura `RSA-2048 / SHA-256` via CryptoAPI nativa (`ManifestVerifier`); *(c)* blindagem contra *DLL Search Order Hijacking* (`ModuleVerifier`); *(d)* mascaramento automático de dados pessoais e caminhos de usuário em logs (`PrivacySanitizer`); e *(e)* diagnóstico de integridade de instalação (`RecoveryCoordinator`).
+7. **Orquestração de Copiloto de Diagnóstico de Hardware por IA Multi-Provedor (`src/ai/`):**
+   A arquitetura de síntese de telemetria de hardware em tempo real acoplada à engenharia de prompts de diagnóstico técnico e ao cliente HTTP nativo (`WinHTTP`) multi-provedor (*BYOK* / Ollama local) sem intermediários.
+8. **Arquitetura Visual, *Trade Dress* e Fluxo de UX das 14 Seções Nativas Win32 (`src/ui/`):**
+   A disposição estética e funcional (*Trade Dress*), hierarquia de navegação das 14 seções especializadas, Painel Unificado de Configurações, Editor de Curvas Térmicas PWM, diálogos avançados de governança (`AdvancedModuleDialogs`) e motor de testes de responsividade/adversariais (23 suítes CTest).
+
+**Proibição de Extração ou Reuso do Comportamento em Softwares Fechados:**
+Qualquer reprodução, tradução para outra linguagem de programação (como C#, Rust, Python, Go, Java, JavaScript/TypeScript), adaptação ou extração dessa **Estrutura, Sequência e Organização (SSO)** ou da máquina de estados do Orquestrador do **Opit-Core** para utilização em outro programa constitui juridicamente **Plágio Estrutural e Obra Derivada do Opit-Core**, não podendo, sob nenhuma hipótese, ser apropriada, fechada em software proprietário ou comercializada por terceiros fora dos termos da GPL-3.0 e desta Política.
+
+### 3.2. Proteção Contra Clonagem por Inspeção de Memória e Inteligência Artificial (IA)
+1. Qualquer software, módulo, orquestrador, script ou código-fonte gerado total ou parcialmente com o auxílio de sistemas de Inteligência Artificial (incluindo LLMs, agentes autônomos de codificação, ferramentas de descompilação assistida por IA, **monitoramento/inspeção de memória RAM, rastreamento de chamadas de API/syscalls em tempo de execução** ou tradução automatizada) que utilize o código-fonte, os binários, o comportamento do orquestrador ou os fluxos de memória do **Opit-Core** como entrada (*prompt*, contexto, treinamento, referência ou engenharia reversa) **constitui juridicamente Obra Derivada do Opit-Core**.
+2. Toda Obra Derivada gerada por IA, inspeção de memória ou refatoração automatizada está **obrigatoriamente vinculada à licença GPL-3.0 e a estes Termos Adicionais**, sendo **ilegal** o seu fechamento em código proprietário, a remoção dos créditos da **ACSTCLab**, o uso de qualquer nome da família **`Opit-*`** ou a sua comercialização sob licença fechada.
 
 ---
 
-## 4. Proteção Antipatenteamento Ofensivo por Terceiros (Seção 11 da GPL-3.0)
+## 4. Publicação Defensiva (*Prior Art*) e Proteção Antipatenteamento Ofensivo (Seção 11 da GPL-3.0)
 
-1. Nenhuma pessoa física ou jurídica está autorizada a requerer registro de patente, modelo de utilidade ou desenho industrial em qualquer jurisdição sobre os métodos, algoritmos, arquitetura de malha fechada, governadores ou interface contidos no **Opit-Core**.
-2. Nos termos da **Seção 8 e Seção 11 da GPL-3.0**, caso qualquer entidade inicie litígio de patente ou propriedade intelectual alegando que o **Opit-Core** infringe qualquer direito, ou tente registrar para si marca da família **`Opit-*`** ou **`ACSTCLab`**, todos os direitos concedidos a essa entidade sob esta licença serão **imediatamente e retroativamente rescindidos**.
+1. **Constituição de Estado da Técnica (*Defensive Publication / Prior Art*):** A publicação deste repositório e da especificação comportamental do Orquestrador na Seção 3.1 constitui registro público internacional de **Estado da Técnica (*Prior Art*)** em favor da **ACSTCLab**, impedindo juridicamente (nos termos do Art. 11 da Lei nº 9.279/96 e tratados internacionais de patentes — PCT/OMPI) que qualquer terceiro ou corporação reivindique novidade ou requeira patente de invenção ou modelo de utilidade sobre o comportamento, arquitetura ou algoritmos do Orquestrador **Opit-Core** em qualquer país.
+2. Nos termos da **Seção 8 e Seção 11 da GPL-3.0**, caso qualquer entidade inicie litígio de patente ou propriedade intelectual alegando que o **Opit-Core** infringe qualquer direito, ou tente registrar para si patente ou marca da família **`Opit-*`** ou **`ACSTCLab`**, todos os direitos concedidos a essa entidade sob esta licença serão **imediatamente e retroativamente rescindidos**.
 
 ---
 
