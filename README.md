@@ -14,7 +14,7 @@
 
 **Código aberto sob `GPL-3.0-only` • Sem ativação • Sem servidor de licença • Sem telemetria • Instalou, usou.**
 
-[Como Baixar e Usar](#-como-baixar-e-usar-no-windows-10--11-sem-instalar-nada) •
+[Como Baixar e Usar](#-como-baixar-e-usar-no-windows-guia-completo-e-arquivos-necessários) •
 [Por que Open Source?](#-por-que-o-opit-core-se-tornou-open-source-gpl-30) •
 [Arquitetura e Módulos](#-arquitetura-e-módulos) •
 [Diferenciais Técnicos](#-três-compromissos-de-engenharia) •
@@ -26,19 +26,81 @@
 
 ---
 
-## 🚀 Como Baixar e Usar no Windows 10 / 11 (Sem Instalar Nada)
+## 🚀 Como Baixar e Usar no Windows (Guia Completo e Arquivos Necessários)
 
-Se você quer apenas **usar o programa pronto**, você **não precisa instalar nada da Microsoft** (nem Visual C++ Redistributable, nem runtime extra) — todas as DLLs necessárias da Microsoft (`MSVCP140.dll`, `VCRUNTIME140.dll`, `ucrtbase.dll` e `api-ms-win-crt-*`) **já vão incluídas dentro do pacote `.zip` oficial** ( e o `.NET Framework 4.8` já vem pré-instalado de fábrica em todo Windows 10 e Windows 11).
-
-### Passo a Passo para o Usuário Final:
-1. Acesse a aba **[Releases](../../releases)** aqui no topo direito do repositório do GitHub.
+### Passo a Passo Rápido (Versão Pronta em Releases)
+1. Acesse a aba **[Releases](../../releases)** aqui no repositório do GitHub.
 2. Em **Assets** (no final da página da versão `v8.1.2`), baixe o pacote correspondente ao seu sistema:
-   - **`Opit-Core-8.1.2-x64.zip`** *(Para Windows 10 e Windows 11 de 64 bits — Recomendado)*
-   - **`Opit-Core-8.1.2-x86.zip`** *(Para sistemas Windows de 32 bits)*
-3. **Extraia (descompacte)** todo o conteúdo do `.zip` para uma pasta de sua preferência (ex.: `C:\Opit-Core`).
-4. Clique com o botão direito em **`Opit-Core.exe`** e selecione **"Executar como Administrador"** *(recomendado para permitir o ajuste de planos de energia ACPI e serviços do Windows)*.
-   - *Nota:* Caso o Windows SmartScreen exiba um aviso de editor independente, clique em **"Mais informações"** → **"Executar assim mesmo"**.
-5. **Para encerrar por completo:** Ao clicar no `X` da janela, o Opit-Core continua cuidando do PC em segundo plano na bandeja do sistema (perto do relógio). Para fechar totalmente e restaurar as configurações originais do Windows, clique com o botão direito no ícone da bandeja e escolha **"Sair"**.
+   - **`Opit-Core-8.1.2-x64.zip`** *(Windows de 64 bits — Recomendado)*
+   - **`Opit-Core-8.1.2-x86.zip`** *(Windows de 32 bits)*
+3. **Extraia (descompacte) TODOS os arquivos do `.zip` juntos na mesma pasta** (ex.: `C:\Opit-Core\`). **Não tire o `Opit-Core.exe` de dentro da pasta sozinho**, pois ele precisa das DLLs que estão ao lado dele.
+4. Clique com o botão direito em **`Opit-Core.exe`** e selecione **"Executar como Administrador"** *(necessário para ajustar planos de energia ACPI e serviços do Windows)*.
+   - *Aviso do Windows SmartScreen:* Como o software é gratuito e independente, o Windows pode exibir a tela azul *"O Windows protegeu o seu computador"*. Clique em **"Mais informações"** e depois em **"Executar assim mesmo"**.
+5. **Para sair totalmente:** Clicar no `X` minimiza o programa para a bandeja do sistema (ao lado do relógio) para manter a proteção ativa. Para encerrar e restaurar as configurações originais do Windows, clique com o botão direito no ícone da bandeja e escolha **"Sair"**.
+
+---
+
+### 📦 Arquivos da Microsoft e de Terceiros: O que não vem de fábrica no Windows e onde colocar?
+
+Para que o **Opit-Core** rode em qualquer computador sem dar erro de *"DLL ausente"* (como `VCRUNTIME140.dll não foi encontrado` ou `ucrtbase.dll ausente`), os arquivos abaixo devem ficar **exatamente na mesma pasta onde está o `Opit-Core.exe`** (no pacote `.zip` da aba *Releases* eles já vêm colocados no lugar certo; se você compilar o código-fonte do zero, veja onde obtê-los e onde colocá-los):
+
+#### 1. Runtime Visual C++ da Microsoft (Não vem de fábrica em instalações limpas do Windows 10 / 11 / 8.1 / 7)
+O Windows recém-formatado não traz as bibliotecas do Visual Studio 2022 instaladas por padrão. Você tem duas opções:
+- **Opção A (Portátil — sem instalar nada no Windows):** Coloque estas **3 DLLs da Microsoft na mesma pasta do `Opit-Core.exe`** *(já incluídas no `.zip` de Release)*:
+  - `MSVCP140.dll` *(Biblioteca padrão C++ da Microsoft)*
+  - `VCRUNTIME140.dll` *(Runtime C do Visual Studio)*
+  - `VCRUNTIME140_1.dll` *(Tratamento de exceções C++ x64 — necessário apenas na versão 64 bits)*
+  - *Onde encontrar se você compilou do zero:* Em `C:\Windows\System32\` (para 64 bits) ou `C:\Windows\SysWOW64\` (para 32 bits), ou na pasta `VC\Redist\MSVC\` do Visual Studio.
+- **Opção B (Instalador Oficial da Microsoft):** Se preferir instalar no sistema operacional (`C:\Windows\System32`), baixe e instale o pacote oficial gratuito **[Microsoft Visual C++ Redistributable 2015–2022](https://learn.microsoft.com/pt-br/cpp/windows/latest-supported-vc-redist)** (`vc_redist.x64.exe` para 64 bits ou `vc_redist.x86.exe` para 32 bits).
+
+#### 2. Universal C Runtime — UCRT (Vem de fábrica no Windows 10 e 11, mas NÃO vem no Windows 7 SP1 / 8.1)
+Nos sistemas **Windows 7 SP1** e **Windows 8.1**, a Microsoft não incluía o Universal CRT de fábrica. Para funcionar nesses sistemas sem depender do Windows Update, coloque estas **10 DLLs diretamente na mesma pasta do `Opit-Core.exe`** *(já incluídas no `.zip` de Release)*:
+- `ucrtbase.dll`
+- `api-ms-win-crt-convert-l1-1-0.dll`
+- `api-ms-win-crt-filesystem-l1-1-0.dll`
+- `api-ms-win-crt-heap-l1-1-0.dll`
+- `api-ms-win-crt-locale-l1-1-0.dll`
+- `api-ms-win-crt-math-l1-1-0.dll`
+- `api-ms-win-crt-runtime-l1-1-0.dll`
+- `api-ms-win-crt-stdio-l1-1-0.dll`
+- `api-ms-win-crt-string-l1-1-0.dll`
+- `api-ms-win-crt-time-l1-1-0.dll`
+- *Onde encontrar se você compilou do zero:* No Windows 10 SDK em `C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64\` (ou `\x86\`).
+
+#### 3. Microsoft .NET Framework 4.8 (Vem de fábrica no Windows 10 e 11, mas NÃO vem no Windows 7 SP1 / 8.1)
+A ponte de leitura de sensores da placa-mãe (`opitcore_lhm_bridge.dll`) utiliza o `.NET Framework 4.8`:
+- **No Windows 10 (versão 1903+) e Windows 11:** Já vem instalado de fábrica no sistema operacional (não precisa fazer nada).
+- **No Windows 7 SP1 e Windows 8.1:** Não vem de fábrica. É necessário baixar e instalar o **[Microsoft .NET Framework 4.8 Runtime](https://dotnet.microsoft.com/pt-br/download/dotnet-framework/net48)** oficial da Microsoft antes de abrir o programa.
+
+#### 4. Bibliotecas de Sensores de Placa-Mãe (`LibreHardwareMonitor` — Não vêm no Windows nem no código-fonte puro do GitHub)
+Por regras de licenciamento do GitHub, o código-fonte do repositório não armazena DLLs compiladas de terceiros. Para que a leitura avançada de sensores Super I/O de placa-mãe funcione (em 64 bits), estes **10 arquivos devem ficar na mesma pasta do `Opit-Core.exe`** *(todos já vêm prontos dentro do `Opit-Core-8.1.2-x64.zip` na aba Releases)*:
+- `opitcore_lhm_bridge.dll` *(Ponte C++/CLI compilada pelo projeto)*
+- `LibreHardwareMonitorLib.dll` *(Motor de sensores MPL-2.0)*
+- `HidSharp.dll`, `DiskInfoToolkit.dll`, `RAMSPDToolkit-NDD.dll`, `BlackSharp.Core.dll`
+- `System.Buffers.dll`, `System.Memory.dll`, `System.Numerics.Vectors.dll`, `System.Runtime.CompilerServices.Unsafe.dll`
+
+### Resumo Visual: Como deve ficar a pasta do programa para funcionar sem erros
+
+```text
+📁 Sua-Pasta-do-Opit-Core/
+ ├── 🚀 Opit-Core.exe                                  <-- Executável principal (Mantenha junto com as DLLs abaixo!)
+ ├── 📜 opit_manifest.json / opit_manifest.sig         <-- Manifesto assinado de integridade dos arquivos
+ │
+ ├── 🏢 [Arquivos da Microsoft — Visual C++ Runtime]   <-- Devem ficar na mesma pasta do .exe (ou em C:\Windows\System32)
+ │    ├── MSVCP140.dll
+ │    ├── VCRUNTIME140.dll
+ │    └── VCRUNTIME140_1.dll                           (Apenas na versão x64)
+ │
+ ├── 🏢 [Arquivos da Microsoft — Universal CRT / UCRT] <-- Devem ficar na mesma pasta do .exe para compatibilidade total
+ │    ├── ucrtbase.dll
+ │    └── api-ms-win-crt-*.dll                         (9 arquivos api-ms-win-crt-*-l1-1-0.dll)
+ │
+ └── 🌡️ [Arquivos de Sensores — Ponte LhmBridge x64]   <-- Devem ficar na mesma pasta do .exe (versão x64)
+      ├── opitcore_lhm_bridge.dll
+      ├── LibreHardwareMonitorLib.dll
+      ├── BlackSharp.Core.dll / DiskInfoToolkit.dll / HidSharp.dll / RAMSPDToolkit-NDD.dll
+      └── System.Buffers.dll / System.Memory.dll / System.Numerics.Vectors.dll / System.Runtime.CompilerServices.Unsafe.dll
+```
 
 ---
 
