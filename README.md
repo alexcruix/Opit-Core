@@ -14,6 +14,7 @@
 
 **Código aberto sob `GPL-3.0-only` • Sem ativação • Sem servidor de licença • Sem telemetria • Instalou, usou.**
 
+[Como Baixar e Usar](#-como-baixar-e-usar-no-windows-10--11-sem-instalar-nada) •
 [Por que Open Source?](#-por-que-o-opit-core-se-tornou-open-source-gpl-30) •
 [Arquitetura e Módulos](#-arquitetura-e-módulos) •
 [Diferenciais Técnicos](#-três-compromissos-de-engenharia) •
@@ -22,6 +23,22 @@
 [Apoie (PIX)](#-apoie-o-projeto-donationware)
 
 </div>
+
+---
+
+## 🚀 Como Baixar e Usar no Windows 10 / 11 (Sem Instalar Nada)
+
+Se você quer apenas **usar o programa pronto**, você **não precisa instalar nada da Microsoft** (nem Visual C++ Redistributable, nem runtime extra) — todas as DLLs necessárias da Microsoft (`MSVCP140.dll`, `VCRUNTIME140.dll`, `ucrtbase.dll` e `api-ms-win-crt-*`) **já vão incluídas dentro do pacote `.zip` oficial** ( e o `.NET Framework 4.8` já vem pré-instalado de fábrica em todo Windows 10 e Windows 11).
+
+### Passo a Passo para o Usuário Final:
+1. Acesse a aba **[Releases](../../releases)** aqui no topo direito do repositório do GitHub.
+2. Em **Assets** (no final da página da versão `v8.1.2`), baixe o pacote correspondente ao seu sistema:
+   - **`Opit-Core-8.1.2-x64.zip`** *(Para Windows 10 e Windows 11 de 64 bits — Recomendado)*
+   - **`Opit-Core-8.1.2-x86.zip`** *(Para sistemas Windows de 32 bits)*
+3. **Extraia (descompacte)** todo o conteúdo do `.zip` para uma pasta de sua preferência (ex.: `C:\Opit-Core`).
+4. Clique com o botão direito em **`Opit-Core.exe`** e selecione **"Executar como Administrador"** *(recomendado para permitir o ajuste de planos de energia ACPI e serviços do Windows)*.
+   - *Nota:* Caso o Windows SmartScreen exiba um aviso de editor independente, clique em **"Mais informações"** → **"Executar assim mesmo"**.
+5. **Para encerrar por completo:** Ao clicar no `X` da janela, o Opit-Core continua cuidando do PC em segundo plano na bandeja do sistema (perto do relógio). Para fechar totalmente e restaurar as configurações originais do Windows, clique com o botão direito no ícone da bandeja e escolha **"Sair"**.
 
 ---
 
