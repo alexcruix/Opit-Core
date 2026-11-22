@@ -1,0 +1,16 @@
+// Opit-Core Windows Resource File
+// Incorpora os icones oficiais nos recursos do executavel
+
+#define IDI_OPIT_BALANCED 101
+#define IDI_OPIT_ECO      102
+#define IDI_OPIT_PERF     103
+#define IDI_OPIT_AI       104
+
+IDI_OPIT_BALANCED ICON "../assets/icons/opit_balanced.ico"
+IDI_OPIT_ECO      ICON "../assets/icons/opit_eco.ico"
+IDI_OPIT_PERF     ICON "../assets/icons/opit_performance.ico"
+IDI_OPIT_AI       ICON "../assets/icons/opit_ai.ico"
+
+// Manifesto embutido: elevacao asInvoker (como antes), DPI PerMonitorV2 e code page UTF-8.
+// RT_MANIFEST = 24; id 1 e o recurso lido pelo loader do Windows.
+1 24 "opit.manifest"

@@ -1,0 +1,28 @@
+Opit-Core C++ — Licenças de Terceiros e Código Principal
+========================================================
+
+Código Principal do Opit-Core (Motor, Orquestrador, UI Win32, Governadores e Segurança):
+  Licença: GNU General Public License v3.0 (GPL-3.0-only)
+  Copyright (C) 2026 ACSTCLab
+  O texto integral da licença encontra-se no arquivo LICENSE na raiz do repositório.
+
+Este projeto integra ou interage opcionalmente com os seguintes componentes de terceiros:
+
+1. LibreHardwareMonitor / LibreHardwareMonitorLib (Opcional em runtime via LhmBridge)
+   Licença: Mozilla Public License 2.0 (MPL-2.0)
+   Uso: opitcore_lhm_bridge.dll (ponte C++/CLI opcional) para leitura de sensores PWM/RPM de placa-mãe.
+   Obrigações na distribuição: aviso MPL-2.0 e disponibilização do código-fonte da ponte LhmBridge
+   (presente em src/fans/lhm_bridge/). As DLLs pré-compiladas do LibreHardwareMonitor possuem
+   licença própria (MPL-2.0) e podem ser obtidas do repositório oficial do LibreHardwareMonitor.
+
+2. nlohmann/json (third_party/nlohmann/json.hpp)
+   Licença: MIT License
+   Copyright (c) 2013-2022 Niels Lohmann
+
+3. SQLite3 (third_party/sqlite3/)
+   Licença: Domínio Público (Public Domain)
+   Autor: D. Richard Hipp e contribuidores do SQLite
+
+4. Outras dependências do runtime .NET do LibreHardwareMonitor (HidSharp, DiskInfoToolkit,
+   RAMSPDToolkit-NDD, BlackSharp.Core, System.*) seguem as licenças dos respectivos pacotes NuGet
+   e não fazem parte do código-fonte principal deste repositório.

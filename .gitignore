@@ -1,0 +1,74 @@
+# Builds e artefatos derivados (reconstruiveis com cmake --build)
+build/
+build-*/
+out/
+Testing/
+dist/
+*.obj
+*.exp
+*.lib
+*.map
+*.pdb
+Opit-Core.map
+
+# Binarios e SDKs de terceiros que nao sao codigo nosso nem dependencia do build:
+# o programa carrega nvapi64.dll do driver da NVIDIA em tempo de execucao, e os
+# zips de ADLX / display-library / LibreHardwareMonitor sao apenas referencia.
+/ADLX-main/
+/ADLX-main.zip
+/nvapi-main/
+/nvapi-main.zip
+/display-library-18.0/
+/drivers.gpu.control-library-master/
+/gpu fan intel.zip
+/LibreHardwareMonitor.zip
+/LibreHardwareMonitor.exe
+/LibreHardwareMonitor.exe.config
+/amd-software-adrenalin-*.exe
+/Setup.exe
+/Bin64/
+/Config/
+
+# DLLs .NET de terceiros: vem pelo build (copiadas pela CMake) e tem licenca propria
+/*.dll
+!third_party/**
+/zh-CN/
+/zh-Hant/
+/es/
+/fr/
+/de/
+/it/
+/ja/
+/pl/
+/ru/
+/sv/
+/tr/
+
+# CREDENCIAIS - nunca vao para um repositorio publico
+certs/
+*.pfx
+*.pvk
+*.key
+*.snk
+scripts/Create-OpitCoreCertificate.ps1
+scripts/Sign-Binaries.ps1
+
+# Backups locais do historico e pacotes de exportacao
+backup_*.zip
+GitHub-Upload/
+*.xlsx
+
+# Logs, sondas e workspaces de investigacao
+*.log
+temp/
+opitcore.json
+*.db
+*.sqlite
+
+# IDE / sistema
+.vs/
+.vscode/
+.idea/
+*.user
+Thumbs.db
+.DS_Store
