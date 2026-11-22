@@ -322,8 +322,12 @@ Nos termos da **Seção 7 (Termos Adicionais)** da `GNU General Public License v
    - Lançar versões futuras, edições comerciais, planos de assinatura ou módulos sob licença proprietária fechada;
    - Oferecer pacotes comerciais oficiais, garantias ou suporte pago sob a marca **Opit-Core**.
    - **Nenhum terceiro** está autorizado a fechar este código, adicionar chaves de ativação/assinatura pagas ou se apropriar do projeto para exploração comercial proprietária.
-3. **Isenção Absoluta de Exigências, Suporte ou Garantias (`Seções 15 e 16`):**
-   O software é disponibilizado gratuitamente *"NO ESTADO EM QUE SE ENCONTRA" (AS IS)*. Nenhum usuário ou terceiro possui direito de exigir suporte técnico, atualizações, manutenção ou indenização de qualquer natureza da **ACSTCLab**.
+3. **Isenção Absoluta de Exigências, Suporte ou Garantias (`Seções 15 e 16`) e Indenização por Terceiros (`Seção 7(f)`):**
+   O software é disponibilizado gratuitamente *"NO ESTADO EM QUE SE ENCONTRA" (AS IS)*. Nenhum usuário ou terceiro possui direito de exigir suporte técnico, atualizações, manutenção ou indenização da **ACSTCLab**. Nos termos da **Seção 7(f)**, qualquer terceiro que redistribuir ou modificar o código assume 100% da responsabilidade legal e obriga-se a indenizar e isentar a **ACSTCLab** de qualquer reclamação decorrente de sua distribuição.
+4. **Proteção Contra Clonagem e Derivação Fechada por Inteligência Artificial (IA):**
+   Qualquer software ou código gerado total ou parcialmente por ferramentas de IA (LLMs, agentes de codificação, inspeção de memória ou tradução automatizada) a partir do código-fonte, binários ou arquitetura do **Opit-Core** constitui juridicamente **Obra Derivada** (Seções 0 e 5 da GPL-3.0 e Art. 5º, VIII, "g" da Lei 9.610/98), sendo estritamente proibido o seu fechamento ou comercialização como software proprietário.
+5. **Prova Criptográfica de Autoria (`RSA-2048`) e Foro Judicial no Brasil:**
+   A titularidade original do projeto é provada matematicamente pela posse da chave privada correspondente à chave pública RSA-2048 oficial embutida em `src/security/ManifestVerifier.cpp`. Qualquer violação resulta na rescisão imediata da licença (Seção 8 da GPL-3.0), aplicando-se as Leis Brasileiras (nº 9.609/98, 9.610/98 e 9.279/96) no Foro do domicílio da titular da **ACSTCLab** no Brasil. Consulte [`TRADEMARK_AND_RIGHTS.md`](TRADEMARK_AND_RIGHTS.md) para o texto jurídico completo.
 
 ### Resumo Prático dos Direitos
 
