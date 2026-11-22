@@ -19,7 +19,7 @@
 [Arquitetura e Módulos](#-arquitetura-e-módulos) •
 [Diferenciais Técnicos](#-três-compromissos-de-engenharia) •
 [Como Compilar](#-como-compilar-do-código-fonte) •
-[Licença GPL-3.0](#-licença-e-direitos-gpl-30) •
+[Licença e Proteção de Marca](#-licença-proteção-de-marca-e-direitos-exclusivos-gpl-30--seção-7) •
 [Apoie (PIX)](#-apoie-o-projeto-donationware)
 
 </div>
@@ -292,41 +292,59 @@ Opit-Core/
 
 ---
 
-## ⚖️ Licença e Direitos (GPL-3.0)
+## ⚖️ Licença, Proteção de Marca e Direitos Exclusivos (GPL-3.0 + Seção 7)
 
 ```text
 Opit-Core — Motor adaptativo de hardware, desempenho e energia para Windows
-Copyright (C) 2026 ACSTCLab
+Copyright (C) 2026 ACSTCLab (Todos os direitos autorais e de marca reservados à autora original)
 
 Este programa é um software livre: você pode redistribuí-lo e/ou modificá-lo
 sob os termos da Licença Pública Geral GNU (GNU General Public License),
 conforme publicada pela Free Software Foundation, exclusivamente na versão 3
-da Licença (GPL-3.0-only).
+da Licença (GPL-3.0-only), sujeito aos Termos Adicionais da Seção 7 abaixo.
 
 Este programa é distribuído na esperança de que possa ser útil, mas SEM
 NENHUMA GARANTIA; mesmo sem a garantia implícita de COMERCIALIZAÇÃO ou
 ADEQUAÇÃO A UM DETERMINADO FIM. Consulte a Licença Pública Geral GNU no
-arquivo LICENSE para obter mais detalhes.
+arquivo LICENSE e o arquivo TRADEMARK_AND_RIGHTS.md para obter mais detalhes.
 ```
 
-### Resumo Prático da Licença
+### 🔒 Termos Adicionais Vinculantes (Seção 7 da GPL-3.0) e Exclusividade Comercial
 
-| ✅ O que você PODE fazer | ⚠️ O que você É OBRIGADO a fazer ao distribuir |
+Nos termos da **Seção 7 (Termos Adicionais)** da `GNU General Public License v3.0`, a **ACSTCLab** estabelece as seguintes restrições legais obrigatórias sobre este repositório e todo o seu conteúdo:
+
+1. **Reserva Exclusiva de Marca, Nome e Identidade Visual (`Seção 7(e)`):**
+   A licença GPL-3.0 aplica-se ao código-fonte, mas **NÃO concede qualquer direito ou licença de uso sobre as marcas, nomes comerciais, identidade visual ou logotipos**. Os nomes **"Opit-Core"**, **"OpitCore"**, **"ACSTCLab"**, **"ACSTC Lab"** e todos os logotipos/ícones presentes em `assets/` são de **titularidade e uso exclusivo da ACSTCLab**.
+   - **É estritamente proibido a terceiros** vender, cobrar assinatura, comercializar ou distribuir versões originais, modificadas (*forks*) ou derivadas utilizando o nome **"Opit-Core"**, a marca **"ACSTCLab"** ou os ícones oficiais do projeto.
+   - Qualquer versão modificada distribuída por terceiros deve remover integralmente o nome **Opit-Core**, a marca **ACSTCLab** e seus logotipos da interface e dos executáveis, além de declarar visivelmente que não é uma versão oficial (`Seção 7(c)` e `7(d)`).
+2. **Exclusividade de Assinatura e Licenciamento Comercial (*Dual-Licensing*):**
+   Como única detentora original da totalidade dos Direitos Autorais (*Copyright*) do **Opit-Core**, **somente a ACSTCLab** detém a prerrogativa jurídica exclusiva de:
+   - Lançar versões futuras, edições comerciais, planos de assinatura ou módulos sob licença proprietária fechada;
+   - Oferecer pacotes comerciais oficiais, garantias ou suporte pago sob a marca **Opit-Core**.
+   - **Nenhum terceiro** está autorizado a fechar este código, adicionar chaves de ativação/assinatura pagas ou se apropriar do projeto para exploração comercial proprietária.
+3. **Isenção Absoluta de Exigências, Suporte ou Garantias (`Seções 15 e 16`):**
+   O software é disponibilizado gratuitamente *"NO ESTADO EM QUE SE ENCONTRA" (AS IS)*. Nenhum usuário ou terceiro possui direito de exigir suporte técnico, atualizações, manutenção ou indenização de qualquer natureza da **ACSTCLab**.
+
+### Resumo Prático dos Direitos
+
+| ✅ O que a Comunidade PODE fazer | 🚫 O que é PROIBIDO a terceiros (Exclusivo da ACSTCLab) |
 | :--- | :--- |
-| ✔️ **Usar gratuitamente** para qualquer finalidade (pessoal, acadêmica ou comercial). | 📌 **Manter a mesma licença (`GPL-3.0`)** em qualquer cópia ou projeto derivado. |
-| ✔️ **Estudar e auditar** todo o funcionamento interno do código-fonte. | 📌 **Disponibilizar o código-fonte completo** de qualquer versão compilada ou modificada que distribuir. |
-| ✔️ **Modificar, traduzir e melhorar** o programa para suas necessidades. | 📌 **Preservar os avisos de Copyright (`ACSTCLab`)** e o histórico de modificações nos arquivos. |
-| ✔️ **Redistribuir** cópias originais ou modificadas para qualquer pessoa. | 📌 **Não adicionar restrições adicionais (DRM/fechamento)** que retirem essas liberdades de outros usuários. |
+| ✔️ **Usar gratuitamente** o Opit-Core em seu computador pessoal ou profissional. | ❌ **Proibido usar o nome "Opit-Core", a marca "ACSTCLab" ou a logo oficial** para vender o software ou cobrar assinaturas. |
+| ✔️ **Estudar e auditar** o código-fonte aberto para aprendizado e transparência. | ❌ **Proibido fechar o código-fonte** ou criar versões pagas com DRM/chave de ativação a partir deste código. |
+| ✔️ **Modificar o código** para uso próprio (mantendo a GPL-3.0 e os créditos originais de Copyright da ACSTCLab no código). | ❌ **Proibido remover os avisos de Copyright da ACSTCLab** ou alegar autoria sobre o motor e sua arquitetura. |
+| ✔️ **Contribuir** com melhorias sabendo que a titularidade comercial do projeto pertence à ACSTCLab. | ❌ **Proibido exigir garantias, suporte ou responsabilização** da autora pelo uso do software gratuito. |
 
 > [!NOTE]
 > **Licenças de Terceiros Compatíveis:**
-> O repositório inclui `nlohmann/json` (**MIT**) e `SQLite3` (**Domínio Público**). A ponte opcional `LhmBridge` interage em tempo de execução com `LibreHardwareMonitorLib` (**MPL-2.0**). Consulte [`docs/THIRD_PARTY_LICENSES.txt`](docs/THIRD_PARTY_LICENSES.txt) para mais detalhes.
+> O repositório inclui `nlohmann/json` (**MIT**) e `SQLite3` (**Domínio Público**). A ponte opcional `LhmBridge` interage em tempo de execução com `LibreHardwareMonitorLib` (**MPL-2.0**). Consulte [`docs/THIRD_PARTY_LICENSES.txt`](docs/THIRD_PARTY_LICENSES.txt) e [`TRADEMARK_AND_RIGHTS.md`](TRADEMARK_AND_RIGHTS.md) para os termos completos.
 
 ---
 
-## 🤝 Como Contribuir
+## 🤝 Como Contribuir (Acordo de Cessão — CLA)
 
-Contribuições técnicas são muito bem-vindas! Ao enviar um *Pull Request*, você concorda em licenciar sua contribuição sob a **GPL-3.0**. Para manter a qualidade de engenharia do Opit-Core, seguimos três regras de ouro:
+Contribuições técnicas são bem-vindas! Ao enviar um *Pull Request* ou contribuição para este repositório, você declara que a contribuição é de sua autoria e **concede à ACSTCLab uma licença perpétua, irrevogável, mundial e irrestrita (incluindo o direito de relicenciamento comercial e distribuição sob qualquer licença, aberta ou fechada)** sobre o código enviado, mantendo também a distribuição pública sob a **GPL-3.0**.
+
+Para manter a qualidade de engenharia do Opit-Core, seguimos três regras de ouro:
 
 1. **Números e medições, não adjetivos:** PRs que dizem *"melhora a velocidade do PC"* sem medição não são aceitos. Documente o estado medido antes e depois com a mesma métrica.
 2. **Prova de reversão obrigatória:** Qualquer nova rotina que altere uma configuração do Windows deve incluir a lógica de reversão exata no encerramento e um teste correspondente em `tests/`.
