@@ -6,20 +6,20 @@
 
 ### Motor Adaptativo de Hardware, Desempenho, Energia e Governança Térmica para Windows
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
+[![License: PolyForm Shield 1.0.0](https://img.shields.io/badge/License-PolyForm%20Shield%201.0.0-blue.svg?style=for-the-badge)](LICENSE)
 [![Language: C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)](CMakeLists.txt)
 [![Platform: Windows 10/11](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64%20%2F%20x86)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](#requisitos-e-compatibilidade)
 [![Tests: 23 Suites](https://img.shields.io/badge/CTest-23%20Su%C3%ADtes%20Verificadas-2ea44f?style=for-the-badge)](#suíte-de-testes-e-verificação)
 [![Telemetry: Zero](https://img.shields.io/badge/Telemetria-ZERO%20(100%25%20Offline)-critical?style=for-the-badge)](#privacidade-e-segurança-defensiva)
 
-**Código aberto sob `GPL-3.0-only` • Sem ativação • Sem servidor de licença • Sem telemetria • Instalou, usou.**
+**Código-fonte disponível (*Source-Available*) sob `PolyForm Shield 1.0.0` • Gratuito para uso • Sem ativação • Sem telemetria • Instalou, usou.**
 
 [Como Baixar e Usar](#-como-baixar-e-usar-no-windows-guia-completo-e-arquivos-necessários) •
-[Por que Open Source?](#-por-que-o-opit-core-se-tornou-open-source-gpl-30) •
+[Por que Código Disponível?](#-por-que-o-opit-core-tem-código-aberto-sob-polyform-shield-100) •
 [Arquitetura e Módulos](#-arquitetura-e-módulos) •
 [Diferenciais Técnicos](#-três-compromissos-de-engenharia) •
 [Como Compilar](#-como-compilar-do-código-fonte) •
-[Licença e Proteção de Marca](#-licença-proteção-de-marca-e-direitos-exclusivos-gpl-30--seção-7) •
+[Licença e Marcas](#-licença-marcas-e-direitos) •
 [Apoie (PIX)](#-apoie-o-projeto-donationware)
 
 </div>
@@ -115,18 +115,18 @@ Diferente de "otimizadores" que aplicam tweaks cegos no Registro do Windows e de
 
 ---
 
-## 🔓 Por que o Opit-Core se tornou Open Source (GPL-3.0)?
+## 🔓 Por que o Opit-Core tem código aberto sob PolyForm Shield 1.0.0?
 
 O Opit-Core nasceu originalmente como um software comercial fechado: exigia login, validava assinatura em servidor remoto, vinculava a licença ao hardware (*fingerprint*) e bloqueava recursos. Em novembro de 2026, toda essa camada de restrição e comunicação com servidores foi **definitivamente arrancada da árvore de código**.
 
-A razão dessa decisão é direta e transparente: **na era atual da Inteligência Artificial, a obscuridade de binários deixou de existir.** Hoje, agentes e ferramentas de IA conseguem inspecionar o uso de memória, rastrear chamadas de sistema de um executável em execução e reconstruir um software equivalente a partir do seu comportamento. Tentar proteger um software local com DRM cada vez mais invasivo só pune o usuário legítimo e não impede a engenharia reversa assistida por IA.
+A razão dessa decisão é direta e transparente: **na era atual da Inteligência Artificial, a obscuridade de binários deixou de existir.** Tentar proteger um software local com DRM invasivo só prejudica o usuário legítimo. Ao mesmo tempo, liberar o código sob uma licença permissiva permite que terceiros simplesmente empacotem e vendam o trabalho alheio como se fosse deles.
 
-Por isso, escolhemos o caminho oposto: **transparência total protegida pela lei do software livre (`GNU General Public License v3.0`)**.
+Por isso, adotamos o modelo **Source-Available** com a **[PolyForm Shield License 1.0.0](LICENSE)**:
 
-- **Contra cópia fechada e apropriação:** A GPL-3.0 garante que o conhecimento e o código do Opit-Core pertençam à comunidade, mas **proíbe legalmente** que qualquer pessoa ou empresa copie este código (ou derive dele via IA ou refatoração), feche o código-fonte e o venda como produto proprietário.
-- **Liberdade recíproca (*Copyleft*):** Qualquer um pode usar, estudar, auditar, modificar e distribuir o Opit-Core gratuitamente — desde que qualquer versão modificada ou derivada também seja publicada integralmente sob a **GPL-3.0**, preservando os créditos de autoria originais da **ACSTCLab**.
+- **100% transparente e gratuito para você usar:** Qualquer pessoa ou empresa pode baixar, usar, auditar o código-fonte (confirmando zero telemetria) e até modificar para uso próprio/interno sem pagar nada.
+- **Proteção comercial exclusiva (Cláusula *Noncompete*):** Terceiros **não podem vender**, cobrar assinatura ou lançar qualquer produto ou serviço concorrente baseado no Opit-Core (seja pago ou gratuito, em qualquer linguagem ou sistema operacional). **Somente a ACSTCLab** tem o direito de comercializar o Opit-Core e o ecossistema `Opit-*`.
 
-**Isto é software livre e *donationware*.** Não existe versão "Pro" escondida nem recursos trancados atrás de chave.
+**Gratuito para uso e *donationware*.** Não existe telemetria nem trava escondida.
 
 ---
 
@@ -199,7 +199,7 @@ flowchart LR
 
 ## 🔒 Privacidade e Segurança Defensiva
 
-O módulo `src/security/` permanece ativo na versão Open Source com uma filosofia clara: **informar e proteger o usuário contra adulterações de terceiros, nunca bloquear sua liberdade.**
+O módulo `src/security/` permanece ativo na versão de código disponível (*Source-Available*) com uma filosofia clara: **informar e proteger o usuário contra adulterações de terceiros, nunca bloquear o uso legítimo.**
 
 - **Prevenção contra Sequestro de DLL (*DLL Search Order Hijacking*):** Endurecimento imediato da ordem de busca de bibliotecas dinâmicas no início de `wWinMain`.
 - **Control Flow Guard (`/guard:cf`), ASLR (`/DYNAMICBASE`), DEP (`/NXCOMPAT`) e Stack Canaries (`/GS`):** Habilitados por padrão na compilação MSVC.
@@ -286,76 +286,51 @@ Opit-Core/
 │   └── sqlite3/            # SQLite3 Amalgamation (Public Domain)
 ├── .gitignore              # Regras de exclusão de artefatos de build e chaves locais
 ├── CMakeLists.txt          # Configuração principal de build (CMake 3.16+)
-├── LICENSE                 # Texto integral da GNU General Public License v3.0
+├── CONTRIBUTING.md         # Regras de contribuição e Acordo de Licença de Contribuidor (CLA)
+├── LICENSE                 # Texto integral da PolyForm Shield License 1.0.0
+├── NOTICE                  # Avisos obrigatórios (Required Notice e Licensor Line of Business)
+├── TRADEMARK_AND_RIGHTS.md # Resumo da licença, política de marcas e isenção de responsabilidade
 └── README.md               # Este documento
 ```
 
 ---
 
-## ⚖️ Licença, Proteção de Marca e Direitos Exclusivos (GPL-3.0 + Seção 7)
+## ⚖️ Licença, Marcas e Direitos
 
 ```text
-Opit-Core — Motor adaptativo de hardware, desempenho e energia para Windows
-Copyright (C) 2026 ACSTCLab (Todos os direitos autorais e de marca reservados à autora original)
-
-Este programa é um software livre: você pode redistribuí-lo e/ou modificá-lo
-sob os termos da Licença Pública Geral GNU (GNU General Public License),
-conforme publicada pela Free Software Foundation, exclusivamente na versão 3
-da Licença (GPL-3.0-only), sujeito aos Termos Adicionais da Seção 7 abaixo.
-
-Este programa é distribuído na esperança de que possa ser útil, mas SEM
-NENHUMA GARANTIA; mesmo sem a garantia implícita de COMERCIALIZAÇÃO ou
-ADEQUAÇÃO A UM DETERMINADO FIM. Consulte a Licença Pública Geral GNU no
-arquivo LICENSE e o arquivo TRADEMARK_AND_RIGHTS.md para obter mais detalhes.
+Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+Required Notice: Licensed under PolyForm Shield License 1.0.0 (https://polyformproject.org/licenses/shield/1.0.0)
+Licensor Line of Business: Opit-Core and the Opit-* software ecosystem (Opit-Graphics, Opit-Graphic, Opit-Grafic, Opit-Sound, adaptive hardware, performance, power, thermal, fan, process and service orchestration and optimization tools for Windows, Linux/Ubuntu, macOS and other operating systems) — ACSTCLab (alexcstos@gmail.com)
 ```
 
-### 🔒 Termos Adicionais Vinculantes (Seção 7 da GPL-3.0) e Exclusividade Comercial
+### Resumo prático da PolyForm Shield License 1.0.0
 
-Nos termos da **Seção 7 (Termos Adicionais)** da `GNU General Public License v3.0`, a **ACSTCLab** estabelece as seguintes restrições legais obrigatórias sobre este repositório e todo o seu conteúdo:
-
-1. **Reserva Exclusiva da Família de Marcas (`Opit-*`), Nome e Identidade Visual em Todos os Sistemas Operacionais (`Seção 7(e)`):**
-   A licença GPL-3.0 aplica-se ao código-fonte, mas **NÃO concede qualquer direito ou licença de uso sobre as marcas, família de marcas, nomes comerciais, identidade visual (*Trade Dress*) ou logotipos**.
-   - Os nomes **"ACSTCLab"**, **"ACSTC Lab"**, **"Opit-Core"**, **"OpitCore"**, bem como toda a **Família de Marcas `Opit-*`** — incluindo expressamente **"Opit-Graphics"**, **"Opit-Graphic"**, **"Opit-Grafic"**, **"Opit-Sound"**, **"Opit-Audio"**, **"Opit-AI"**, **"Opit-Network"**, **"Opit-Memory"**, **"Opit-Storage"**, **"Opit-Boost"**, **"Opit-Engine"**, **"Opit-Pro"** e qualquer outra denominação de software ou serviço iniciada pelo prefixo **`"Opit-"`** ou **`"Opit"`** — e todos os logotipos/ícones presentes em `assets/` são de **titularidade e reserva exclusiva da ACSTCLab em todos os sistemas operacionais e plataformas (Windows, Ubuntu, Debian, Fedora, Arch, SteamOS e qualquer distribuição GNU/Linux, macOS, iOS, Android e Web)**.
-   - **É estritamente proibido a terceiros** vender, cobrar assinatura, comercializar, realizar *ports* para outros sistemas operacionais usando a marca, publicar em lojas de aplicativos ou repositórios de pacotes (**Microsoft Store, Winget, Chocolatey, Scoop, Ubuntu Snap Store / Snapcraft, Flathub / Flatpak, AppImageHub, APT/PPA, AUR, Steam, Epic Games Store, Apple App Store, Google Play**), registrar ou utilizar domínios web da marca (**`acstclab.com`**, **`acstclab.com.br`**, **`acstclab.*`**, **`opitcore.*`**, **`opit-core.*`** ou **`opit-*.*`**, sujeitos a retomada por má-fé via SACI-Adm/Registro.br e UDRP/ICANN) ou distribuir versões originais, modificadas (*forks*) ou softwares derivados utilizando o nome **"Opit-Core"**, **"Opit-Graphics" / "Opit-Graphic" / "Opit-Grafic"**, **"Opit-Sound"**, qualquer variação **`Opit-*`**, a marca **"ACSTCLab"** ou os ícones oficiais do projeto.
-   - Qualquer versão modificada ou port para outro sistema operacional distribuído por terceiros deve manter o código aberto sob a GPL-3.0 e remover integralmente o prefixo **`Opit`**, a marca **`ACSTCLab`** e seus logotipos da interface e dos executáveis (*rebranding completo*), além de declarar visivelmente que não é uma versão oficial (`Seção 7(c)` e `7(d)`).
-2. **Exclusividade de Assinatura e Licenciamento Comercial (*Dual-Licensing*):**
-   Como única detentora original da totalidade dos Direitos Autorais (*Copyright*) do **Opit-Core**, **somente a ACSTCLab** detém a prerrogativa jurídica exclusiva de:
-   - Lançar versões futuras, edições comerciais, planos de assinatura ou módulos sob licença proprietária fechada;
-   - Oferecer pacotes comerciais oficiais, garantias ou suporte pago sob a marca **Opit-Core**.
-   - **Nenhum terceiro** está autorizado a fechar este código, adicionar chaves de ativação/assinatura pagas ou se apropriar do projeto para exploração comercial proprietária.
-3. **Isenção Absoluta de Responsabilidade sobre Hardware, Queima de Componentes, Sistema Operacional e Dados (`Seções 15 e 16`) + Indenização por Terceiros (`Seção 7(f)`):**
-   - O software é disponibilizado gratuitamente *"NO ESTADO EM QUE SE ENCONTRA" (AS IS)*, e **o usuário assume 100% do risco e da responsabilidade exclusiva** pelo uso do programa em seu computador.
-   - **Nem a autora nem a ACSTCLab têm qualquer culpa ou responsabilidade civil, técnica ou financeira** caso o computador do usuário apresente superaquecimento, queima ou dano físico/elétrico em qualquer peça de hardware (**CPU, GPU/Placa de Vídeo, Placa-Mãe, RAM, SSD/HD, Fonte, Bateria ou Ventoinhas/Water Cooler**), seja por mau uso, curvas de ventoinhas mal configuradas pelo usuário, falha mecânica de refrigeração, leitura imprecisa de sensores ou defeito prévio do equipamento, bem como por **Telas Azuis (BSOD), travamentos, corrupção do Windows, falha de drivers/serviços ou perda de arquivos/dados**.
-   - Nenhum usuário ou terceiro possui direito de exigir suporte técnico, conserto, atualizações ou indenização da **ACSTCLab** (responsabilidade financeira igual a **zero**). Nos termos da **Seção 7(f)**, qualquer terceiro que redistribuir ou modificar o código assume 100% da responsabilidade legal perante terceiros e obriga-se a indenizar e isentar a **ACSTCLab** de qualquer reclamação.
-4. **Proteção da Arquitetura/Comportamento do Orquestrador (*SSO*), Esquemas de Dados e Contra Clonagem por IA ou Inspeção de Memória:**
-   A proteção autoral do **Opit-Core** abrange não apenas o código literal em C++17, mas toda a **Estrutura, Sequência, Organização (*SSO — Structure, Sequence, and Organization*) e Comportamento Sistêmico do seu Orquestrador Adaptativo em Malha Fechada** — incluindo: *(1)* Pipeline de 4 estágios (*Observação Multimodal* ➔ *Diagnóstico de Gargalo com Histerese e Trava Anti-Vaivém* ➔ *Execução Coordenada ACPI/Processos/Serviços/PWM* ➔ *Verificação Pós-Execução Baseada em Evidência e Função-Objetivo*); *(2)* *Diário Transacional de Reversão Exata e Esquema de Banco SQLite3* (Art. 7º, XIII da Lei 9.610/98); *(3)* *Guardião Térmico Progressivo*; *(4)* *Ponte Isolada de Sensores C ABI sobre C++/CLI (`OpitLhmBridge`)*; *(5)* *Arquitetura de Segurança Defensiva em Camadas (`.text` baseline pós-ASLR, manifesto RSA-SHA256 e `PrivacySanitizer`)*; *(6)* *Motor de Diagnóstico de Hardware por IA Multi-Provedor*; e *(7)* *Trade Dress e UX das 14 Seções Win32 Nativas*. Qualquer software, módulo ou código gerado em qualquer linguagem (C#, Rust, Python, Go, C++, etc.) ou produzido com auxílio de **IA (LLMs, agentes de codificação, inspeção de memória RAM, rastreamento de chamadas de sistema ou tradução automatizada)** que replique ou extraia esse comportamento e arquitetura constitui juridicamente **Plágio Estrutural e Obra Derivada** (Seções 0 e 5 da GPL-3.0 e Art. 5º, VIII, "g" e Art. 7º, XII e XIII da Lei 9.610/98), sendo estritamente proibido o seu uso em programas fechados ou comercialização proprietária por terceiros. Esta especificação também constitui **Publicação Defensiva (*Prior Art*)** internacional, impedindo o patenteamento desses mecanismos por terceiros.
-5. **Prova Criptográfica de Autoria (`RSA-2048`) e Foro Judicial no Brasil:**
-   A titularidade original do projeto é provada matematicamente pela posse da chave privada correspondente à chave pública RSA-2048 oficial embutida em `src/security/ManifestVerifier.cpp`. Qualquer violação resulta na rescisão imediata da licença (Seção 8 da GPL-3.0), aplicando-se as Leis Brasileiras (nº 9.609/98, 9.610/98 e 9.279/96) no Foro do domicílio da titular da **ACSTCLab** no Brasil. Consulte [`TRADEMARK_AND_RIGHTS.md`](TRADEMARK_AND_RIGHTS.md) para o texto jurídico completo.
-
-### Resumo Prático dos Direitos
-
-| ✅ O que a Comunidade PODE fazer | 🚫 O que é PROIBIDO a terceiros (Exclusivo da ACSTCLab) |
+| ✅ O que você PODE fazer gratuitamente | 🚫 O que é PROIBIDO a terceiros (Exclusivo da ACSTCLab) |
 | :--- | :--- |
-| ✔️ **Usar gratuitamente** o Opit-Core em seu computador pessoal ou profissional. | ❌ **Proibido usar o nome "Opit-Core", a marca "ACSTCLab" ou a logo oficial** para vender o software ou cobrar assinaturas. |
-| ✔️ **Estudar e auditar** o código-fonte aberto para aprendizado e transparência. | ❌ **Proibido fechar o código-fonte** ou criar versões pagas com DRM/chave de ativação a partir deste código. |
-| ✔️ **Modificar o código** para uso próprio (mantendo a GPL-3.0 e os créditos originais de Copyright da ACSTCLab no código). | ❌ **Proibido remover os avisos de Copyright da ACSTCLab** ou alegar autoria sobre o motor e sua arquitetura. |
-| ✔️ **Contribuir** com melhorias sabendo que a titularidade comercial do projeto pertence à ACSTCLab. | ❌ **Proibido exigir garantias, suporte ou responsabilização** da autora pelo uso do software gratuito. |
+| ✔️ **Usar gratuitamente** em computadores pessoais ou dentro de empresas (uso interno). | ❌ **Proibido vender ou oferecer produto concorrente** (pago ou gratuito) usando este código ou derivados (*Noncompete*). |
+| ✔️ **Estudar e auditar** todo o código-fonte (confirmando zero telemetria). | ❌ **Proibido lançar versões concorrentes** em outra linguagem, interface ou sistema operacional (Windows, Linux/Ubuntu, macOS). |
+| ✔️ **Modificar o código** para uso próprio ou interno, sem concorrer com o Opit-Core. | ❌ **Proibido usar as marcas** `"Opit-Core"`, `"ACSTCLab"`, `"Opit-Graphics"` / `"Opit-Grafic"`, `"Opit-Sound"` ou os logotipos oficiais. |
+| ✔️ **Compartilhar** preservando a licença e os avisos do arquivo [`NOTICE`](NOTICE). | ❌ **Proibido exigir garantias, suporte ou responsabilização** por danos de hardware, tela azul ou perda de dados (*No Liability*). |
+
+> [!IMPORTANT]
+> **Exclusividade Comercial da ACSTCLab:** Somente a **ACSTCLab** tem direito de comercializar o Opit-Core, lançar versões pagas/por assinatura ou conceder licenças comerciais separadas. Consulte [`LICENSE`](LICENSE), [`NOTICE`](NOTICE) e [`TRADEMARK_AND_RIGHTS.md`](TRADEMARK_AND_RIGHTS.md) para os termos completos.
+>
+> *(Nota histórica: a versão `v8.1.2` publicada anteriormente sob a GPL-3.0 continua sob a GPL-3.0 para quem a baixou naquela versão; todas as alterações e versões seguintes no repositório são regidas exclusivamente pela **PolyForm Shield 1.0.0**.)*
 
 > [!NOTE]
-> **Licenças de Terceiros Compatíveis:**
-> O repositório inclui `nlohmann/json` (**MIT**) e `SQLite3` (**Domínio Público**). A ponte opcional `LhmBridge` interage em tempo de execução com `LibreHardwareMonitorLib` (**MPL-2.0**). Consulte [`docs/THIRD_PARTY_LICENSES.txt`](docs/THIRD_PARTY_LICENSES.txt) e [`TRADEMARK_AND_RIGHTS.md`](TRADEMARK_AND_RIGHTS.md) para os termos completos.
+> **Licenças de terceiros:** o repositório inclui `nlohmann/json` (**MIT**) e `SQLite3` (**domínio público**). A ponte opcional `LhmBridge` usa a `LibreHardwareMonitorLib` (**MPL-2.0**) em tempo de execução. Veja [`docs/THIRD_PARTY_LICENSES.txt`](docs/THIRD_PARTY_LICENSES.txt).
 
 ---
 
-## 🤝 Como Contribuir (Acordo de Cessão — CLA)
+## 🤝 Como Contribuir
 
-Contribuições técnicas são bem-vindas! Ao enviar um *Pull Request* ou contribuição para este repositório, você declara que a contribuição é de sua autoria e **concede à ACSTCLab uma licença perpétua, irrevogável, mundial e irrestrita (incluindo o direito de relicenciamento comercial e distribuição sob qualquer licença, aberta ou fechada)** sobre o código enviado, mantendo também a distribuição pública sob a **GPL-3.0**.
+Contribuições são bem-vindas! Antes de abrir um *Pull Request*, leia o [`CONTRIBUTING.md`](CONTRIBUTING.md): ele traz as regras de engenharia do projeto e o **Acordo de Licença de Contribuidor (CLA)**, que precisa ser aceito expressamente no PR.
 
-Para manter a qualidade de engenharia do Opit-Core, seguimos três regras de ouro:
+Em resumo, as regras de engenharia são:
 
-1. **Números e medições, não adjetivos:** PRs que dizem *"melhora a velocidade do PC"* sem medição não são aceitos. Documente o estado medido antes e depois com a mesma métrica.
-2. **Prova de reversão obrigatória:** Qualquer nova rotina que altere uma configuração do Windows deve incluir a lógica de reversão exata no encerramento e um teste correspondente em `tests/`.
-3. **Ausência declarada:** Se um sensor ou métrica não estiver disponível num hardware específico, o código deve reportar explicitamente como *não medido / não suportado*, nunca inventar ou estimar números falsos.
+1. **Números e medições, não adjetivos:** documente o estado medido antes e depois, com a mesma métrica.
+2. **Prova de reversão obrigatória:** toda alteração de configuração do Windows precisa de reversão exata e de teste em `tests/`.
+3. **Ausência declarada:** o que não for medido deve aparecer como *não medido / não suportado*.
 
 ---
 
@@ -375,5 +350,5 @@ Se o programa ajudou a reduzir a temperatura do seu computador, silenciou suas v
 ---
 
 <div align="center">
-  <sub>Desenvolvido com rigor em C++17 por <b>ACSTCLab</b> • Distribuído sob a licença <b>GNU GPL v3.0</b>.</sub>
+  <sub>Desenvolvido com rigor em C++17 por <b>ACSTCLab</b> • Distribuído sob a licença <b>PolyForm Shield 1.0.0</b>.</sub>
 </div>

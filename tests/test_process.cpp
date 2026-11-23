@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "platform/windows/ProcessManager.h"
 #include <iostream>
 #include <windows.h>

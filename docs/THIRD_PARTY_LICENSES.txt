@@ -2,9 +2,10 @@ Opit-Core C++ — Licenças de Terceiros e Código Principal
 ========================================================
 
 Código Principal do Opit-Core (Motor, Orquestrador, UI Win32, Governadores e Segurança):
-  Licença: GNU General Public License v3.0 (GPL-3.0-only)
-  Copyright (C) 2026 ACSTCLab
-  O texto integral da licença encontra-se no arquivo LICENSE na raiz do repositório.
+  Licença: PolyForm Shield License 1.0.0 (Source-Available / Noncompete)
+  URL da Licença: https://polyformproject.org/licenses/shield/1.0.0
+  Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+  O texto integral da licença encontra-se no arquivo LICENSE e os avisos obrigatórios em NOTICE.
 
 Este projeto integra ou interage opcionalmente com os seguintes componentes de terceiros:
 

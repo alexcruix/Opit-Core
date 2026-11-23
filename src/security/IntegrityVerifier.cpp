@@ -1,5 +1,10 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "IntegrityVerifier.h"
 #include "utils/StringUtils.h"
+
+#ifdef _WIN32
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -13,6 +18,22 @@
 
 #pragma comment(lib, "advapi32.lib")
 
+#else
+
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <cctype>
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
+#include <iomanip>
+#include <sstream>
+
+#endif
+
 namespace opitcore {
 namespace security {
 
@@ -23,6 +44,8 @@ void IntegrityVerifier::InvalidateCache() {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_cache.clear();
 }
+
+#ifdef _WIN32
 
 bool IntegrityVerifier::IsSafeRelativePath(const std::string& relPath,
                                           const std::wstring& baseDir,
@@ -225,6 +248,232 @@ IntegrityStatus IntegrityVerifier::VerifyFile(const std::wstring& baseDir,
 
     return result;
 }
+
+#else
+
+namespace {
+
+// O libcrypto nao e ligado em tempo de build: e carregado em tempo de execucao, do mesmo modo que
+// o programa carrega NVAPI e DWM no Windows e o libX11 no motor adaptativo. Se os simbolos EVP nao
+// existirem, nenhuma rota devolve hash e o chamador classifica como ReadError — nunca como Valid.
+struct EvpFunctions {
+    const void* (*EVP_sha256)() = nullptr;
+    void* (*EVP_MD_CTX_new)() = nullptr;
+    void (*EVP_MD_CTX_free)(void*) = nullptr;
+    int (*EVP_DigestInit_ex)(void*, const void*, void*) = nullptr;
+    int (*EVP_DigestUpdate)(void*, const void*, size_t) = nullptr;
+    int (*EVP_DigestFinal_ex)(void*, unsigned char*, unsigned int*) = nullptr;
+    bool loaded = false;
+};
+
+const EvpFunctions& Evp() {
+    static EvpFunctions f;
+    static bool attempted = false;
+    if (attempted) return f;
+    attempted = true;
+    void* h = dlopen("libcrypto.so.3", RTLD_NOW | RTLD_LOCAL);
+    if (!h) h = dlopen("libcrypto.so", RTLD_NOW | RTLD_LOCAL);
+    if (!h) return f;
+    f.EVP_sha256 = reinterpret_cast<decltype(f.EVP_sha256)>(dlsym(h, "EVP_sha256"));
+    f.EVP_MD_CTX_new = reinterpret_cast<decltype(f.EVP_MD_CTX_new)>(dlsym(h, "EVP_MD_CTX_new"));
+    f.EVP_MD_CTX_free = reinterpret_cast<decltype(f.EVP_MD_CTX_free)>(dlsym(h, "EVP_MD_CTX_free"));
+    f.EVP_DigestInit_ex =
+        reinterpret_cast<decltype(f.EVP_DigestInit_ex)>(dlsym(h, "EVP_DigestInit_ex"));
+    f.EVP_DigestUpdate =
+        reinterpret_cast<decltype(f.EVP_DigestUpdate)>(dlsym(h, "EVP_DigestUpdate"));
+    f.EVP_DigestFinal_ex =
+        reinterpret_cast<decltype(f.EVP_DigestFinal_ex)>(dlsym(h, "EVP_DigestFinal_ex"));
+    f.loaded = f.EVP_sha256 && f.EVP_MD_CTX_new && f.EVP_MD_CTX_free && f.EVP_DigestInit_ex &&
+               f.EVP_DigestUpdate && f.EVP_DigestFinal_ex;
+    return f;
+}
+
+} // namespace
+
+bool IntegrityVerifier::IsSafeRelativePath(const std::string& relPath,
+                                          const std::wstring& baseDir,
+                                          std::wstring& outCanonicalPath) {
+    outCanonicalPath.clear();
+    if (relPath.empty()) return false;
+
+    // Em Linux nao ha letra de unidade nem streams NTFS, portanto dois-pontos e um caractere
+    // valido de nome de arquivo e nao e rejeitado. O que tem de sair e o caminho absoluto.
+    if (relPath.front() == '/') return false;
+
+    std::istringstream iss(relPath);
+    std::string segment;
+    while (std::getline(iss, segment, '/')) {
+        if (segment == ".." || segment == ".") {
+            return false;
+        }
+    }
+
+    std::string baseUtf8 = StringUtils::ToUtf8(baseDir);
+    char baseResolved[PATH_MAX];
+    if (!realpath(baseUtf8.c_str(), baseResolved)) return false;
+
+    std::string base = baseResolved;
+    if (!base.empty() && base.back() != '/') base += '/';
+
+    // O relPath ja nao comeca por '/' nem tem '..', logo a concatenacao fica dentro da base.
+    std::string joined = base + relPath;
+
+    // Se o arquivo existe, resolve os symlinks: e a saida real por link simbolico que faz neste
+    // sistema o papel que no Windows fazem as streams NTFS. A base resolvida e o limite.
+    char targetResolved[PATH_MAX];
+    if (realpath(joined.c_str(), targetResolved)) {
+        std::string real = targetResolved;
+        if (real.size() < base.size()) return false;
+        // ext4/xfs/btrfs distinguem maiusculas de minusculas: comparacao byte a byte, sem towlower.
+        if (real.compare(0, base.size(), base) != 0) return false;
+        outCanonicalPath = StringUtils::ToWide(real);
+        return true;
+    }
+
+    // Arquivo em falta nao e travessia: o chamador abre e recebe Missing, como no Windows.
+    outCanonicalPath = StringUtils::ToWide(joined);
+    return true;
+}
+
+bool IntegrityVerifier::ComputeHandleSha256(int fd, std::string& outHexSha256) {
+    outHexSha256.clear();
+    if (fd < 0) return false;
+
+    const EvpFunctions& evp = Evp();
+    if (!evp.loaded) return false;
+
+    if (lseek(fd, 0, SEEK_SET) == static_cast<off_t>(-1)) return false;
+
+    void* ctx = evp.EVP_MD_CTX_new();
+    if (!ctx) return false;
+
+    bool success = (evp.EVP_DigestInit_ex(ctx, evp.EVP_sha256(), nullptr) == 1);
+    std::vector<unsigned char> buffer(64 * 1024);
+
+    while (success) {
+        ssize_t got = read(fd, buffer.data(), buffer.size());
+        if (got > 0) {
+            success = (evp.EVP_DigestUpdate(ctx, buffer.data(), static_cast<size_t>(got)) == 1);
+            continue;
+        }
+        if (got < 0 && errno == EINTR) continue;
+        break; // got == 0: fim do arquivo
+    }
+
+    unsigned char hashVal[32]{};
+    unsigned int hashLen = 0;
+    if (success) {
+        success = (evp.EVP_DigestFinal_ex(ctx, hashVal, &hashLen) == 1) && hashLen == 32;
+    }
+    evp.EVP_MD_CTX_free(ctx);
+    if (!success) return false;
+
+    std::ostringstream oss;
+    for (unsigned int i = 0; i < hashLen; ++i) {
+        oss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(hashVal[i]);
+    }
+    outHexSha256 = oss.str();
+    return !outHexSha256.empty();
+}
+
+bool IntegrityVerifier::ComputeFileSha256(const std::wstring& filePath, std::string& outHexSha256) {
+    std::string narrow = StringUtils::ToUtf8(filePath);
+    int fd = open(narrow.c_str(), O_RDONLY | O_CLOEXEC);
+    if (fd < 0) {
+        return false;
+    }
+
+    bool ok = ComputeHandleSha256(fd, outHexSha256);
+    close(fd);
+    return ok;
+}
+
+IntegrityStatus IntegrityVerifier::VerifyFile(const std::wstring& baseDir,
+                                             const FileIntegrityRecord& record,
+                                             bool useCache) {
+    std::wstring fullPath;
+    if (!IsSafeRelativePath(record.relativePath, baseDir, fullPath)) {
+        return IntegrityStatus::ManifestInvalid;
+    }
+
+    // A medicao e feita pelo fd, que aponta para o inode aberto aqui. Em POSIX nao ha lock
+    // obrigatoria contra escrita (o FILE_SHARE_READ do Windows nao tem equivalente), por isso a
+    // identidade do inode e o que impede que seja medido um arquivo trocado pelo caminho.
+    std::string narrow = StringUtils::ToUtf8(fullPath);
+    int fd = open(narrow.c_str(), O_RDONLY | O_CLOEXEC);
+    if (fd < 0) {
+        if (errno == ENOENT || errno == ENOTDIR) {
+            return IntegrityStatus::Missing;
+        }
+        return IntegrityStatus::ReadError;
+    }
+
+    // Metadados detalhados para resistencia a timestomping. O ctime (ChangeTime) e o ponto forte
+    // deste sistema: utimensat altera atime/mtime, mas nao aceita um ctime escolhido pelo chamador.
+    struct stat st{};
+    bool hasStat = (fstat(fd, &st) == 0);
+
+    uint64_t fileSize = hasStat ? static_cast<uint64_t>(st.st_size) : 0;
+    uint64_t lastWrite = hasStat ? static_cast<uint64_t>(st.st_mtim.tv_sec) * 1000000000ULL +
+                                      static_cast<uint64_t>(st.st_mtim.tv_nsec)
+                                 : 0;
+    uint64_t changeTime = hasStat ? static_cast<uint64_t>(st.st_ctim.tv_sec) * 1000000000ULL +
+                                       static_cast<uint64_t>(st.st_ctim.tv_nsec)
+                                  : 0;
+    uint64_t volumeSerial = hasStat ? static_cast<uint64_t>(st.st_dev) : 0;
+
+    if (useCache && hasStat) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        auto it = m_cache.find(fullPath);
+        if (it != m_cache.end()) {
+            const auto& entry = it->second;
+            if (entry.lastWriteTime == lastWrite &&
+                entry.changeTime == changeTime &&
+                entry.fileSize == fileSize &&
+                entry.volumeSerial == volumeSerial) {
+                m_cacheHits++;
+                close(fd);
+                return entry.status;
+            }
+        }
+    }
+
+    std::string calcSha256;
+    if (!ComputeHandleSha256(fd, calcSha256)) {
+        close(fd);
+        return IntegrityStatus::ReadError;
+    }
+    close(fd);
+
+    m_hashCalculations++;
+
+    std::string expectedNorm = record.expectedSha256;
+    for (auto& c : expectedNorm) c = static_cast<char>(::tolower(c));
+    for (auto& c : calcSha256) c = static_cast<char>(::tolower(c));
+
+    IntegrityStatus result = (expectedNorm == calcSha256) ? IntegrityStatus::Valid : IntegrityStatus::Tampered;
+
+    if (useCache && hasStat) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        CacheEntry entry;
+        entry.lastWriteTime = lastWrite;
+        entry.changeTime = changeTime;
+        entry.fileSize = fileSize;
+        entry.volumeSerial = volumeSerial;
+        // Identidade fisica do arquivo: par (st_dev, st_ino) nos mesmos 16 bytes que no Windows
+        // guardam VolumeSerial + FileId.
+        std::memset(entry.fileId, 0, sizeof(entry.fileId));
+        std::memcpy(entry.fileId, &st.st_dev, sizeof(st.st_dev) <= 8 ? sizeof(st.st_dev) : 8);
+        std::memcpy(entry.fileId + 8, &st.st_ino, sizeof(st.st_ino) <= 8 ? sizeof(st.st_ino) : 8);
+        entry.sha256 = calcSha256;
+        entry.status = result;
+        m_cache[fullPath] = entry;
+    }
+
+    return result;
+}
+
+#endif
 
 } // namespace security
 } // namespace opitcore

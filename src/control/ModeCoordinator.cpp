@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "ModeCoordinator.h"
 #include "core/Logger.h"
 #include "core/ModuleAdvancedSettings.h"
@@ -7,7 +10,101 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+#ifdef _WIN32
 #include <windows.h>
+#else
+#include <csignal>
+#include <cstring>
+#include <errno.h>
+#include <fcntl.h>
+#include <mutex>
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
+
+namespace {
+
+// Wake lock do modo de desempenho. No Windows e a mesma chamada de sempre; em Linux o
+// equivalente e um inibidor do logind: systemd-inhibit segura o fd de Inhibit() enquanto o
+// seu processo vive, por isso o pedido existe enquanto o coordernador o quiser e desaparece
+// com ele. Sem binario, sem bus ou sem permissao, avisamos e nao fingimos que bloqueamos —
+// o mesmo criterio dos outros botoes que o kernel nao expoe.
+void ApplyKeepAwake(bool on) {
+#ifdef _WIN32
+    const DWORD keepAwake = ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED;
+    const DWORD release = ES_CONTINUOUS;
+    if (on) { SetThreadExecutionState(keepAwake); } else { SetThreadExecutionState(release); }
+#else
+    static std::mutex s_mtx;
+    static pid_t s_inhibitPid = 0;
+    std::lock_guard<std::mutex> lock(s_mtx);
+    if (on) {
+        if (s_inhibitPid > 0) {
+            int status = 0;
+            if (waitpid(s_inhibitPid, &status, WNOHANG) == 0) return; // inibidor ainda de pe
+            s_inhibitPid = 0; // morreu (logind recusou ou o bus caiu): tenta de novo e avisa
+        }
+        int fds[2];
+        if (pipe(fds) != 0) {
+            char msg[160];
+            snprintf(msg, sizeof(msg), "Wake lock indisponivel: pipe falhou (%s).", strerror(errno));
+            OPIT_LOG_WARN(msg);
+            return;
+        }
+        // O exec fecha a ponta de escrita; sem esta bandeira o pai esperaria ate a saida do
+        // systemd-inhibit em vez de receber EOF no instante em que o lancamento correu bem.
+        fcntl(fds[1], F_SETFD, FD_CLOEXEC);
+        pid_t child = fork();
+        if (child < 0) {
+            close(fds[0]);
+            close(fds[1]);
+            char msg[160];
+            snprintf(msg, sizeof(msg), "Wake lock indisponivel: fork falhou (%s).", strerror(errno));
+            OPIT_LOG_WARN(msg);
+            return;
+        }
+        if (child == 0) {
+            close(fds[0]);
+            setpgid(0, 0); // o sleep que o systemd-inhibit lanca herda o grupo: fechar o wake
+                           // lock tem de matar os dois, senao fica um sleep 65h pendurado
+            execlp("systemd-inhibit", "systemd-inhibit",
+                   "--who=Opit-Core", "--why=Modo de desempenho", "--what=idle:sleep",
+                   "--mode=block", "sleep", "infinity", static_cast<char*>(nullptr));
+            int e = errno;
+            ssize_t wrote = write(fds[1], &e, sizeof(e));
+            (void)wrote;
+            _exit(127);
+        }
+        close(fds[1]);
+        int childErrno = 0;
+        ssize_t rd = read(fds[0], &childErrno, sizeof(childErrno));
+        close(fds[0]);
+        if (rd == static_cast<ssize_t>(sizeof(childErrno))) {
+            char msg[192];
+            snprintf(msg, sizeof(msg),
+                     "Wake lock indisponivel: systemd-inhibit nao lancou (%s).", strerror(childErrno));
+            OPIT_LOG_WARN(msg);
+            int status = 0;
+            waitpid(child, &status, 0);
+            return;
+        }
+        s_inhibitPid = child;
+        OPIT_LOG_INFO("Wake lock (logind) ativado: suspensao e inatividade bloqueadas.");
+        return;
+    }
+    if (s_inhibitPid > 0) {
+        kill(-s_inhibitPid, SIGTERM);
+        kill(s_inhibitPid, SIGTERM);
+        int status = 0;
+        waitpid(s_inhibitPid, &status, 0);
+        s_inhibitPid = 0;
+        OPIT_LOG_INFO("Wake lock (logind) liberado: estado anterior restaurado.");
+    }
+#endif
+}
+
+} // namespace
 
 namespace opitcore {
 
@@ -104,9 +201,9 @@ void ModeCoordinator::ApplySystemState(const SavedSystemState& state) {
     m_powerMgr.PreventDiskPowerDown(state.diskPowerDownPrevented);
 
     if (state.systemSleepPrevented) {
-        SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+        ApplyKeepAwake(true);
     } else {
-        SetThreadExecutionState(ES_CONTINUOUS);
+        ApplyKeepAwake(false);
     }
 }
 
@@ -230,7 +327,7 @@ bool ModeCoordinator::SetManualGameMode(bool enable, std::string& outMsg) {
 
         // Proteção essencial do jogo: impede suspensão de discos e do sistema operacional
         m_powerMgr.PreventDiskPowerDown(true);
-        SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+        ApplyKeepAwake(true);
 
         outMsg = "Modo Jogo ativado. Discos e perifericos essenciais protegidos contra suspensao.";
         OPIT_LOG_INFO("[COORDINATOR] " + outMsg);
@@ -253,7 +350,7 @@ bool ModeCoordinator::SetManualGameMode(bool enable, std::string& outMsg) {
         }
 
         ApplySystemState(m_preGameState);
-        SetThreadExecutionState(ES_CONTINUOUS);
+        ApplyKeepAwake(false);
 
         outMsg = "Modo Jogo desativado. Estado anterior restaurado com sucesso.";
         OPIT_LOG_INFO("[COORDINATOR] " + outMsg);
@@ -341,7 +438,7 @@ bool ModeCoordinator::OnGameStarted(const std::string& exeName, std::string& out
             m_powerMgr.PreventDiskPowerDown(true);
         }
         if (profile.preventSystemSleep) {
-            SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+            ApplyKeepAwake(true);
         }
 
         outMsg = "Perfil individual aplicado para o jogo: " + lower +
@@ -376,7 +473,7 @@ bool ModeCoordinator::OnGameStarted(const std::string& exeName, std::string& out
         GpuControlManager::Instance().ApplyProfile(0, GpuPowerProfile::HighPerformance, gpuMsg);
         if (!gpuMsg.empty()) OPIT_LOG_INFO("[COORDINATOR] GPU (" + lower + "): " + gpuMsg);
         m_powerMgr.PreventDiskPowerDown(true);
-        SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+        ApplyKeepAwake(true);
 
         outMsg = "Jogo detectado (" + lower + "). Perfil padrao de Alto Desempenho ativado.";
     }
@@ -411,7 +508,7 @@ bool ModeCoordinator::OnGameStopped(const std::string& exeName, std::string& out
 
     // Último jogo encerrado: restaura o estado anterior preservado
     ApplySystemState(m_preGameState);
-    SetThreadExecutionState(ES_CONTINUOUS);
+    ApplyKeepAwake(false);
 
     outMsg = "Ultimo jogo encerrado (" + lower + "). Estado anterior de energia e hardware restaurado com sucesso.";
     OPIT_LOG_INFO("[COORDINATOR] " + outMsg);
@@ -453,7 +550,7 @@ void ModeCoordinator::RestorePreviousState() {
         m_gameModeActive = false;
         m_activeGames.clear();
     }
-    SetThreadExecutionState(ES_CONTINUOUS);
+    ApplyKeepAwake(false);
 }
 
 } // namespace opitcore

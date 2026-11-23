@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 // Prova das bandas de plano derivadas dos limites Min/Max salvos na janela "Configuracao Avancada:
 // CPU Min/Max", nos tres perfis declarados pela usuaria:
 //   desktop / servidor (sem bateria), na tomada: 0-35 / 36-78 / 79-100

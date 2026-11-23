@@ -1,6 +1,24 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "SmbiosProbe.h"
 
+#ifdef _WIN32
 #include <windows.h>
+#else
+// Os tres tipos do parser de tabelas definidos a partir do C++, para que a aritmetica de
+// offsets SMBIOS seja literalmente a mesma dos dois lados.
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+typedef unsigned int DWORD;
+#include <algorithm>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <dirent.h>
+#include <fstream>
+#include <map>
+#endif
 #include <cstring>
 
 namespace opitcore {
@@ -94,23 +112,10 @@ DWORD ReadDword(const BYTE* header, BYTE offset, BYTE length) {
 
 } // namespace
 
-SmbiosSnapshot SmbiosProbe::Probe() {
-    SmbiosSnapshot snap;
-
-    UINT size = GetSystemFirmwareTable('RSMB', 0, nullptr, 0);
-    if (size == 0) {
-        return snap;
-    }
-    std::vector<BYTE> buf(size);
-    UINT got = GetSystemFirmwareTable('RSMB', 0, buf.data(), size);
-    if (got < sizeof(OpitRawSmbiosData)) {
-        return snap;
-    }
-
-    auto* raw = reinterpret_cast<const OpitRawSmbiosData*>(buf.data());
-    const BYTE* p = raw->TableData;
-    const BYTE* end = raw->TableData + raw->Length;
-
+// O parse das estruturas empacotadas e comum aos dois sistemas: o Windows tira os bytes do
+// GetSystemFirmwareTable('RSMB'), o Linux do blob /sys/firmware/dmi/tables/DMI. O firmware
+// fala o mesmo SMBIOS, por isso a aritmetica de offsets nao se duplica.
+static void ParsePackedTables(const BYTE* p, const BYTE* end, SmbiosSnapshot& snap) {
     while (p + 4 <= end) {
         const BYTE type = p[0];
         const BYTE len = p[1];
@@ -192,7 +197,120 @@ SmbiosSnapshot SmbiosProbe::Probe() {
     }
 
     snap.ok = true;
+}
+
+#ifdef _WIN32
+SmbiosSnapshot SmbiosProbe::Probe() {
+    SmbiosSnapshot snap;
+
+    UINT size = GetSystemFirmwareTable('RSMB', 0, nullptr, 0);
+    if (size == 0) {
+        return snap;
+    }
+    std::vector<BYTE> buf(size);
+    UINT got = GetSystemFirmwareTable('RSMB', 0, buf.data(), size);
+    if (got < sizeof(OpitRawSmbiosData)) {
+        return snap;
+    }
+
+    auto* raw = reinterpret_cast<const OpitRawSmbiosData*>(buf.data());
+    ParsePackedTables(raw->TableData, raw->TableData + raw->Length, snap);
     return snap;
 }
+#else
+namespace {
+
+bool ReadWholeFile(const std::string& path, std::vector<BYTE>& out) {
+    std::FILE* f = std::fopen(path.c_str(), "rb");
+    if (!f) return false;
+    if (std::fseek(f, 0, SEEK_END) != 0) { std::fclose(f); return false; }
+    const long n = std::ftell(f);
+    std::fseek(f, 0, SEEK_SET);
+    if (n <= 0) { std::fclose(f); return false; }
+    out.resize(static_cast<size_t>(n));
+    const size_t got = std::fread(out.data(), 1, out.size(), f);
+    std::fclose(f);
+    if (got == 0) { out.clear(); return false; }
+    out.resize(got);
+    return true;
+}
+
+std::string ReadIdField(const std::string& idRoot, const char* key) {
+    std::ifstream f(idRoot + "/" + key);
+    std::string s;
+    std::getline(f, s);
+    return s;
+}
+
+bool NadaDetectado(const SmbiosSnapshot& snap) {
+    return snap.bios.vendor.empty() && snap.bios.version.empty() &&
+           snap.board.manufacturer.empty() && snap.board.product.empty() &&
+           snap.sticks.empty();
+}
+
+// Prenchimento pelo /sys/class/dmi/id: e o que um utilizador sem root consegue ler.
+// A origem passa a Detected (o kernel re-emite o firmware) e os pentes de RAM ficam
+// ausentes, porque so a tabela empacotada os traz.
+void FillFromDmiId(const std::string& idRoot, SmbiosSnapshot& snap) {
+    snap.bios.vendor = ReadIdField(idRoot, "bios_vendor");
+    snap.bios.version = ReadIdField(idRoot, "bios_version");
+    snap.bios.releaseDate = ReadIdField(idRoot, "bios_date");
+    snap.bios.origin = DataOrigin::Detected;
+    snap.bios.confidence = DataConfidence::Medium;
+
+    const std::string boardVendor = ReadIdField(idRoot, "board_vendor");
+    const std::string boardName = ReadIdField(idRoot, "board_name");
+    const std::string boardVersion = ReadIdField(idRoot, "board_version");
+    const std::string sysVendor = ReadIdField(idRoot, "sys_vendor");
+    const std::string productName = ReadIdField(idRoot, "product_name");
+
+    if (!IsBoardPlaceholder(boardVendor)) {
+        snap.board.manufacturer = boardVendor;
+    } else if (!IsBoardPlaceholder(sysVendor)) {
+        snap.board.manufacturer = sysVendor;
+    }
+    if (!IsBoardPlaceholder(boardName)) {
+        snap.board.product = boardName;
+    } else if (!IsBoardPlaceholder(productName)) {
+        snap.board.product = productName;
+    }
+    if (!IsBoardPlaceholder(boardVersion)) {
+        snap.board.version = boardVersion;
+    }
+    const std::string chassisHex = ReadIdField(idRoot, "chassis_type");
+    if (!chassisHex.empty()) {
+        snap.board.chassisType = ChassisName((BYTE)std::strtoul(chassisHex.c_str(), nullptr, 0));
+    }
+    snap.board.origin = DataOrigin::Detected;
+    snap.board.confidence = DataConfidence::Medium;
+    snap.ok = !NadaDetectado(snap);
+}
+
+} // namespace
+
+SmbiosSnapshot SmbiosProbe::Probe() {
+    SmbiosSnapshot snap;
+
+    // Raiz configuravel, pelo mesmo motivo do hwmon: as tabelas empacotadas so se leem a
+    // root, e sem fixture nao ha como exercitar o parser em maquina virtual nem em CI.
+    const char* tablesEnv = std::getenv("OPITCORE_DMI_ROOT");
+    const std::string tablesRoot = (tablesEnv && *tablesEnv) ? std::string(tablesEnv)
+                                                             : std::string("/sys/firmware/dmi/tables");
+    std::vector<BYTE> blob;
+    if (ReadWholeFile(tablesRoot + "/DMI", blob) && blob.size() >= 4) {
+        ParsePackedTables(blob.data(), blob.data() + blob.size(), snap);
+        if (!NadaDetectado(snap)) {
+            snap.ok = true;
+            return snap;
+        }
+        snap = SmbiosSnapshot();
+    }
+
+    const char* idEnv = std::getenv("OPITCORE_DMI_ID_ROOT");
+    const std::string idRoot = (idEnv && *idEnv) ? std::string(idEnv) : std::string("/sys/class/dmi/id");
+    FillFromDmiId(idRoot, snap);
+    return snap;
+}
+#endif
 
 } // namespace opitcore

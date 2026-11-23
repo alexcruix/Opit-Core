@@ -1,7 +1,14 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #pragma once
+#include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 namespace opitcore {
 
@@ -90,6 +97,28 @@ private:
     uint32_t m_prePreventDiskTimeoutDc = 0;
 
     bool m_pauseIdleDevicesEco = false;
+
+#ifndef _WIN32
+    // Estado exato capturado antes da primeira escrita, para o restaurar nao inventar
+    // valores: em Linux, depois de escrever nao ha como consultar o valor anterior.
+    // Uma politica cpufreq por classe de nucleo (hibridos Intel tem policy0 e policy8 com
+    // governor, EPP e tetos proprios), por isso o estado e por politica e nao global.
+    struct LinuxPolicyState {
+        std::string path;
+        std::string governor;
+        std::string epp;
+        bool hasEpp = false;
+        unsigned long long minKHz = 0;
+        unsigned long long maxKHz = 0;
+    };
+    std::vector<int> m_linuxParkedCpus;   // cpuN colocados offline por esta instancia
+    std::vector<LinuxPolicyState> m_linuxOriginalPolicies;
+    bool m_linuxCapturedState = false;
+    std::vector<std::pair<std::string, std::string>> m_linuxBlockControlOriginals;  // runtime PM dos discos
+    std::vector<std::pair<std::string, std::string>> m_linuxUsbControlOriginals;    // suspend selectivo USB
+    std::string m_linuxAspmOriginalPolicy;
+    bool m_linuxAspmCaptured = false;
+#endif
 };
 
 } // namespace opitcore

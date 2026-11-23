@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 // Prova de execução do orquestrador: decisões que não escrevem no sistema não são orquestração.
 // Este teste mede o efeito real no powrprof (leitura de volta), nunca o retorno isolado de uma função.
 #include "adaptive/AdaptiveEngine.h"

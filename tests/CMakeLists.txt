@@ -18,7 +18,7 @@ macro(add_opit_test name srcFile)
     opitcore_power
     opitcore_protection
     opitcore_control
-    opitcore_platform_windows
+    ${OPITCORE_PLATFORM_LIB}
     opitcore_utils
   )
   add_test(NAME ${name} COMMAND ${name})
@@ -41,8 +41,13 @@ add_opit_test(test_mode_guardian test_mode_guardian.cpp)
 add_opit_test(test_plan_bands test_plan_bands.cpp)
 add_opit_test(test_advanced_module_settings test_advanced_module_settings.cpp)
 add_opit_test(test_fans_module test_fans_module.cpp)
-add_opit_test(test_lhm_bridge test_lhm_bridge.cpp)
-add_dependencies(test_lhm_bridge opitcore_lhm_bridge OpitCore)
+# O bridge .NET so existe quando o LibreHardwareMonitorLib.dll esta na raiz. Sem ele
+# (noutro SO, ou clone do repo sem os DLL) nem o teste nem a dependencia do OpitCore
+# podem ser declarados: o CMake rebenta no generate e nao compila nada.
+if(WIN32 AND TARGET opitcore_lhm_bridge)
+  add_opit_test(test_lhm_bridge test_lhm_bridge.cpp)
+  add_dependencies(test_lhm_bridge opitcore_lhm_bridge OpitCore)
+endif()
 add_opit_test(test_disk_protection_and_logging test_disk_protection_and_logging.cpp)
 add_opit_test(test_opit_security test_opit_security.cpp)
 add_opit_test(test_adversarial_suite test_adversarial_suite.cpp)
@@ -63,7 +68,7 @@ target_link_libraries(test_ui_responsiveness PRIVATE
   opitcore_power
   opitcore_protection
   opitcore_control
-  opitcore_platform_windows
+  ${OPITCORE_PLATFORM_LIB}
   opitcore_utils
   dwmapi
   uxtheme

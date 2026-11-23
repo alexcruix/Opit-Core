@@ -1,12 +1,33 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "ModuleVerifier.h"
 #include "IntegrityVerifier.h"
 #include "utils/StringUtils.h"
+
+#ifdef _WIN32
+
 #include <psapi.h>
 
 #pragma comment(lib, "psapi.lib")
 
+#else
+
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <fstream>
+#include <set>
+#include <string>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <cerrno>
+
+#endif
+
 namespace opitcore {
 namespace security {
+
+#ifdef _WIN32
 
 bool ModuleVerifier::EnforceSecureDllSearchOrder() {
     // Desativa caixas de diálogo modais do sistema em caso de erro de carregamento
@@ -131,6 +152,115 @@ std::vector<std::string> ModuleVerifier::ListLoadedModuleNames() {
     }
     return names;
 }
+
+#else
+
+bool ModuleVerifier::EnforceSecureDllSearchOrder() {
+    // O mecanismo do Windows retira o diretorio de trabalho e o PATH da busca de DLLs. A glibc nao
+    // pesquisa no diretorio de trabalho: as dependencias proprias resolvem por RPATH/RUNPATH e so
+    // depois por LD_LIBRARY_PATH. Nao ha, por isso, o que desativar, e o risco equivalente fica
+    // coberto pelo VerifyAndLoad abaixo, que recusa qualquer caminho que nao seja absoluto.
+    return true;
+}
+
+void* ModuleVerifier::VerifyAndLoad(const std::wstring& moduleFullPath,
+                                   const std::string& expectedSha256,
+                                   IntegrityStatus& outStatus) {
+    outStatus = IntegrityStatus::Valid;
+
+    std::string path = StringUtils::ToUtf8(moduleFullPath);
+    if (path.empty()) {
+        outStatus = IntegrityStatus::ReadError;
+        return nullptr;
+    }
+    if (path.front() != '/') {
+        // So se carrega pelo caminho absoluto ja resolvido: um caminho relativo passaria pela
+        // pesquisa de LD_LIBRARY_PATH, que e exatamente o que esta rota tem de impedir.
+        outStatus = IntegrityStatus::ManifestInvalid;
+        return nullptr;
+    }
+
+    // O fd e medido antes de qualquer dlopen: daqui ate ao carregamento o conteudo ja esta provado
+    // e o par (st_dev, st_ino) fica registado para a comprobacao pos-carregamento.
+    int fd = open(path.c_str(), O_RDONLY | O_CLOEXEC);
+    if (fd < 0) {
+        outStatus = (errno == ENOENT || errno == ENOTDIR) ? IntegrityStatus::Missing
+                                                         : IntegrityStatus::ReadError;
+        return nullptr;
+    }
+
+    struct stat pre{};
+    bool hasPre = (fstat(fd, &pre) == 0);
+
+    std::string calcSha256;
+    if (!IntegrityVerifier::ComputeHandleSha256(fd, calcSha256)) {
+        close(fd);
+        outStatus = IntegrityStatus::ReadError;
+        return nullptr;
+    }
+    close(fd);
+
+    if (!expectedSha256.empty()) {
+        std::string expNorm = expectedSha256;
+        for (auto& c : expNorm) c = static_cast<char>(::tolower(c));
+        for (auto& c : calcSha256) c = static_cast<char>(::tolower(c));
+
+        if (expNorm != calcSha256) {
+            outStatus = IntegrityStatus::Tampered;
+            return nullptr;
+        }
+    }
+
+    void* hMod = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
+    if (!hMod) {
+        outStatus = IntegrityStatus::ReadError;
+        return nullptr;
+    }
+
+    // Comprobacao pos-carregamento, o equivalente ao file-index reconsultado no Windows: se o
+    // inode, o tamanho ou o mtime mudaram entre a medicao e o dlopen, o que foi mapeado na
+    // memoria nao e o arquivo que foi verificado.
+    if (hasPre) {
+        struct stat post{};
+        if (stat(path.c_str(), &post) == 0) {
+            if (post.st_dev != pre.st_dev || post.st_ino != pre.st_ino ||
+                post.st_size != pre.st_size || post.st_mtim.tv_sec != pre.st_mtim.tv_sec ||
+                post.st_mtim.tv_nsec != pre.st_mtim.tv_nsec) {
+                dlclose(hMod);
+                outStatus = IntegrityStatus::Tampered;
+                return nullptr;
+            }
+        }
+    }
+
+    return hMod;
+}
+
+std::vector<std::string> ModuleVerifier::ListLoadedModuleNames() {
+    // O mapa de enderecos do proprio processo e o equivalente do EnumProcessModules: cada linha ja
+    // carrega o caminho absoluto do arquivo mapeado. O mesmo arquivo aparece em varias linhas
+    // (segmentos), por isso a lista devolve cada caminho uma vez, por ordem de aparecimento.
+    std::vector<std::string> names;
+    std::set<std::string> seen;
+    std::ifstream maps("/proc/self/maps");
+    std::string line;
+    while (std::getline(maps, line)) {
+        size_t tab = line.find('\t');
+        if (tab == std::string::npos) continue;
+        std::string path = line.substr(tab + 1);
+        while (!path.empty() && (path.back() == '\r' || path.back() == '\n')) path.pop_back();
+        // So arquivos mapeados: as entradas anonimas do mapa ([heap], [vdso], memfd) nao comecam
+        // por '/' e caem fora da lista, tal como as bibliotecas carregadas na memoria sem arquivo
+        // caem fora do EnumProcessModules do Windows.
+        if (path.empty() || path[0] != '/') continue;
+        if (seen.insert(path).second) {
+            names.push_back(path);
+        }
+    }
+    return names;
+}
+
+#endif
 
 } // namespace security
 } // namespace opitcore

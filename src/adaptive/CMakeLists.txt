@@ -23,5 +23,5 @@ target_link_libraries(opitcore_adaptive
     opitcore_utils
     opitcore_metrics
     opitcore_power
-    opitcore_platform_windows
+    ${OPITCORE_PLATFORM_LIB}
 )

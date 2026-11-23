@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "adaptive/TelemetryValidator.h"
 #include "adaptive/AppProfileManager.h"
 #include "adaptive/BottleneckDiagnoser.h"

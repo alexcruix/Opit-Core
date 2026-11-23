@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "AiAssistantManager.h"
 #include "core/DatabaseManager.h"
 #include "core/Logger.h"
@@ -12,19 +15,36 @@
 #include "utils/Types.h"
 #include "utils/StringUtils.h"
 
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
 #include <wincrypt.h>
 #include <winhttp.h>
+#else
+// Linux nao tem DPAPI nem WinHTTP. Os dois gemelos vivem em baixo: a chave de API vai para AES-256-GCM
+// e o transporte para libcurl, ambos resolvidos em tempo de execucao por dlopen (mesma tecnica do NVAPI,
+// do DWM e do libcrypto ja usados no modulo de seguranca) -- nada e exigido ao build e nada e instalado.
+#include <dlfcn.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <cerrno>
+#include <cstring>
+#include <cstdlib>
+#include <vector>
+#endif
 
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <algorithm>
 
+#ifdef _WIN32
 #pragma comment(lib, "winhttp.lib")
 #pragma comment(lib, "crypt32.lib")
+#endif
 
 namespace opitcore {
 
@@ -37,38 +57,50 @@ struct HttpResult {
     std::string error;
 };
 
-// DPAPI: a chave de API da IA nunca fica em texto puro no banco (mesma tecnica do SessionManager).
-static std::string BytesToHex(const BYTE* data, DWORD len) {
+// Rotulo do blob guardado no banco. Significa "protegido pela plataforma", nao o algoritmo: no Windows e
+// DPAPI, no Linux e AES-256-GCM com keyfile 0600. Os dois tem o mesmo comprimento para que a leitura e a
+// migracao de texto puro sejam um unico caminho.
+#ifdef _WIN32
+constexpr char k_protected_key_marker[] = "DPAPI1:";
+#else
+constexpr char k_protected_key_marker[] = "AESG1:";
+#endif
+constexpr size_t k_protected_key_marker_len = sizeof(k_protected_key_marker) - 1;
+
+// A chave de API da IA nunca fica em texto puro no banco. BYTE e unsigned char no Windows, por isso as
+// helpers de hex vão em `unsigned char` e servem as duas plataformas sem duplicação.
+static std::string BytesToHex(const unsigned char* data, size_t len) {
     static constexpr char k_digits[] = "0123456789abcdef";
     std::string s;
     s.reserve(len * 2);
-    for (DWORD i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i) {
         s.push_back(k_digits[(data[i] >> 4) & 0x0F]);
         s.push_back(k_digits[data[i] & 0x0F]);
     }
     return s;
 }
 
-static std::vector<BYTE> HexToBytes(const std::string& hex) {
+static std::vector<unsigned char> HexToBytes(const std::string& hex) {
     auto nibble = [](char c) -> int {
         if (c >= '0' && c <= '9') return c - '0';
         if (c >= 'a' && c <= 'f') return c - 'a' + 10;
         if (c >= 'A' && c <= 'F') return c - 'A' + 10;
         return -1;
     };
-    std::vector<BYTE> out;
+    std::vector<unsigned char> out;
     if (hex.size() % 2 != 0) return out;
     out.reserve(hex.size() / 2);
     for (size_t i = 0; i < hex.size(); i += 2) {
         int hi = nibble(hex[i]);
         int lo = nibble(hex[i + 1]);
         if (hi < 0 || lo < 0) return {};
-        out.push_back(static_cast<BYTE>((hi << 4) | lo));
+        out.push_back(static_cast<unsigned char>((hi << 4) | lo));
     }
     return out;
 }
 
-static std::string ProtectApiKeyDpapi(const std::string& plain) {
+#ifdef _WIN32
+static std::string ProtectApiKey(const std::string& plain) {
     DATA_BLOB in{};
     in.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(plain.data()));
     in.cbData = static_cast<DWORD>(plain.size());
@@ -82,8 +114,8 @@ static std::string ProtectApiKeyDpapi(const std::string& plain) {
     return hex;
 }
 
-static std::string UnprotectApiKeyDpapi(const std::string& hex) {
-    std::vector<BYTE> enc = HexToBytes(hex);
+static std::string UnprotectApiKey(const std::string& hex) {
+    std::vector<unsigned char> enc = HexToBytes(hex);
     if (enc.empty()) return {};
     DATA_BLOB in{};
     in.pbData = enc.data();
@@ -97,6 +129,188 @@ static std::string UnprotectApiKeyDpapi(const std::string& hex) {
     return plain;
 }
 
+#else
+
+// O que o DPAPI faz de graca no Linux nao tem equivalente: nao ha chave ligada ao utilizador pelo sistema.
+// Aqui a chave de API sai do banco e vai para um blob AES-256-GCM; a chave de 32 bytes vive num ficheiro
+// 0600 criado com O_EXCL. O que isto PROTEGE: copies do banco (backups, pastas sincronizadas) deixam de
+// levar a chave em claro. O que NAO protege: um processo ja a correr como o mesmo utilizador, que pode
+// ler o keyfile. Sem o libcrypto disponivel, devolve vazio e quem chama apaga a chave do banco -- nunca
+// ha texto puro em fallback.
+struct AeadFunctions {
+    void* (*EVP_CIPHER_CTX_new)() = nullptr;
+    void (*EVP_CIPHER_CTX_free)(void*) = nullptr;
+    const void* (*EVP_aes_256_gcm)() = nullptr;
+    int (*EVP_CipherInit_ex)(void*, const void*, void*, const unsigned char*, const unsigned char*, int) = nullptr;
+    int (*EVP_CipherUpdate)(void*, unsigned char*, int*, const unsigned char*, int) = nullptr;
+    int (*EVP_CipherFinal_ex)(void*, unsigned char*, int*) = nullptr;
+    int (*EVP_CIPHER_CTX_ctrl)(void*, int, int, void*) = nullptr;
+    int (*RAND_bytes)(unsigned char*, int) = nullptr;
+    bool loaded = false;
+};
+
+const AeadFunctions& Aead() {
+    static AeadFunctions f;
+    static bool attempted = false;
+    if (attempted) return f;
+    attempted = true;
+    void* h = dlopen("libcrypto.so.3", RTLD_NOW | RTLD_LOCAL);
+    if (!h) h = dlopen("libcrypto.so", RTLD_NOW | RTLD_LOCAL);
+    if (!h) return f;
+    f.EVP_CIPHER_CTX_new = reinterpret_cast<decltype(f.EVP_CIPHER_CTX_new)>(dlsym(h, "EVP_CIPHER_CTX_new"));
+    f.EVP_CIPHER_CTX_free = reinterpret_cast<decltype(f.EVP_CIPHER_CTX_free)>(dlsym(h, "EVP_CIPHER_CTX_free"));
+    f.EVP_aes_256_gcm = reinterpret_cast<decltype(f.EVP_aes_256_gcm)>(dlsym(h, "EVP_aes_256_gcm"));
+    f.EVP_CipherInit_ex = reinterpret_cast<decltype(f.EVP_CipherInit_ex)>(dlsym(h, "EVP_CipherInit_ex"));
+    f.EVP_CipherUpdate = reinterpret_cast<decltype(f.EVP_CipherUpdate)>(dlsym(h, "EVP_CipherUpdate"));
+    f.EVP_CipherFinal_ex = reinterpret_cast<decltype(f.EVP_CipherFinal_ex)>(dlsym(h, "EVP_CipherFinal_ex"));
+    f.EVP_CIPHER_CTX_ctrl = reinterpret_cast<decltype(f.EVP_CIPHER_CTX_ctrl)>(dlsym(h, "EVP_CIPHER_CTX_ctrl"));
+    f.RAND_bytes = reinterpret_cast<decltype(f.RAND_bytes)>(dlsym(h, "RAND_bytes"));
+    f.loaded = f.EVP_CIPHER_CTX_new && f.EVP_CIPHER_CTX_free && f.EVP_aes_256_gcm && f.EVP_CipherInit_ex &&
+               f.EVP_CipherUpdate && f.EVP_CipherFinal_ex && f.EVP_CIPHER_CTX_ctrl && f.RAND_bytes;
+    return f;
+}
+
+// Numeros lidos em /usr/include/openssl/evp.h nesta maquina (linhas 375-377), nao de memoria.
+constexpr int k_ctrl_aead_set_ivlen = 0x9;
+constexpr int k_ctrl_aead_get_tag = 0x10;
+constexpr int k_ctrl_aead_set_tag = 0x11;
+constexpr size_t k_gcm_iv_len = 12;
+constexpr size_t k_gcm_tag_len = 16;
+constexpr size_t k_key_len = 32;
+
+std::string SecretKeyDir() {
+    const char* xdg = getenv("XDG_CONFIG_HOME");
+    if (xdg && *xdg) return std::string(xdg) + "/opitcore";
+    const char* home = getenv("HOME");
+    if (home && *home) return std::string(home) + "/.config/opitcore";
+    return {};
+}
+
+// Le ou cria o keyfile de 32 bytes com 0600. Recusa ficheiro com permissoes largas: um 0644 lido como
+// "protegido" seria exactamente o sucesso falso que este modulo nao pode produzir.
+bool LoadOrCreateSecretKey(std::vector<unsigned char>& outKey) {
+    outKey.clear();
+    const AeadFunctions& f = Aead();
+    std::string dir = SecretKeyDir();
+    if (dir.empty()) return false;
+    std::string path = dir + "/ai_secret.key";
+
+    int fd = open(path.c_str(), O_RDONLY | O_CLOEXEC);
+    if (fd >= 0) {
+        struct stat st{};
+        bool ok = (fstat(fd, &st) == 0) && S_ISREG(st.st_mode) && (st.st_mode & 0777) == 0600 &&
+                  st.st_size == static_cast<off_t>(k_key_len);
+        if (ok) {
+            outKey.resize(k_key_len);
+            ok = (read(fd, outKey.data(), k_key_len) == static_cast<ssize_t>(k_key_len));
+        }
+        close(fd);
+        if (ok) return true;
+        outKey.clear();
+        return false;
+    }
+
+    // Criar o directório e o ficheiro, ambos sem acesso para grupo/otros.
+    if (mkdir(dir.c_str(), 0700) != 0 && errno != EEXIST) return false;
+    std::vector<unsigned char> fresh(k_key_len, 0);
+    if (f.RAND_bytes(fresh.data(), static_cast<int>(fresh.size())) != 1) {
+        int urandom = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+        if (urandom < 0) return false;
+        ssize_t got = read(urandom, fresh.data(), fresh.size());
+        close(urandom);
+        if (got != static_cast<ssize_t>(fresh.size())) return false;
+    }
+    int nf = open(path.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0600);
+    if (nf < 0) {
+        // Ja existe criado por outra instancia: usamos o que esta la, se as permissoes o permitirem.
+        int again = open(path.c_str(), O_RDONLY | O_CLOEXEC);
+        if (again < 0) return false;
+        struct stat st{};
+        if (fstat(again, &st) != 0 || (st.st_mode & 0777) != 0600 ||
+            st.st_size != static_cast<off_t>(k_key_len)) {
+            close(again);
+            return false;
+        }
+        fresh.resize(static_cast<size_t>(st.st_size));
+        bool got = (read(again, fresh.data(), fresh.size()) == static_cast<ssize_t>(fresh.size()));
+        close(again);
+        if (!got) return false;
+    } else {
+        ssize_t written = write(nf, fresh.data(), fresh.size());
+        close(nf);
+        if (written != static_cast<ssize_t>(fresh.size())) return false;
+    }
+    outKey = std::move(fresh);
+    return true;
+}
+
+static std::string ProtectApiKey(const std::string& plain) {
+    const AeadFunctions& f = Aead();
+    if (!f.loaded || plain.empty()) return {};
+    std::vector<unsigned char> key;
+    if (!LoadOrCreateSecretKey(key) || key.size() != k_key_len) return {};
+
+    std::vector<unsigned char> iv(k_gcm_iv_len, 0);
+    if (f.RAND_bytes(iv.data(), static_cast<int>(iv.size())) != 1) return {};
+
+    void* ctx = f.EVP_CIPHER_CTX_new();
+    if (!ctx) return {};
+    std::vector<unsigned char> ct(plain.size() + 16, 0);
+    std::vector<unsigned char> tag(k_gcm_tag_len, 0);
+    int len = 0, finalLen = 0;
+    bool ok = f.EVP_CipherInit_ex(ctx, f.EVP_aes_256_gcm(), nullptr, nullptr, nullptr, 1) == 1 &&
+              f.EVP_CIPHER_CTX_ctrl(ctx, k_ctrl_aead_set_ivlen, static_cast<int>(k_gcm_iv_len), nullptr) == 1 &&
+              f.EVP_CipherInit_ex(ctx, nullptr, nullptr, key.data(), iv.data(), 1) == 1 &&
+              f.EVP_CipherUpdate(ctx, ct.data(), &len,
+                                 reinterpret_cast<const unsigned char*>(plain.data()),
+                                 static_cast<int>(plain.size())) == 1 &&
+              f.EVP_CipherFinal_ex(ctx, ct.data() + len, &finalLen) == 1 &&
+              f.EVP_CIPHER_CTX_ctrl(ctx, k_ctrl_aead_get_tag, static_cast<int>(k_gcm_tag_len), tag.data()) == 1;
+    f.EVP_CIPHER_CTX_free(ctx);
+    if (!ok) return {};
+
+    // Blob: IV(12) || tag(16) || texto cifrado. O tamanho real do cifrado e o do claro (GCM e um fluxo).
+    std::vector<unsigned char> blob;
+    blob.reserve(iv.size() + tag.size() + plain.size());
+    blob.insert(blob.end(), iv.begin(), iv.end());
+    blob.insert(blob.end(), tag.begin(), tag.end());
+    blob.insert(blob.end(), ct.begin(), ct.begin() + static_cast<ptrdiff_t>(plain.size()));
+    return BytesToHex(blob.data(), blob.size());
+}
+
+static std::string UnprotectApiKey(const std::string& hex) {
+    const AeadFunctions& f = Aead();
+    if (!f.loaded) return {};
+    std::vector<unsigned char> blob = HexToBytes(hex);
+    if (blob.size() < k_gcm_iv_len + k_gcm_tag_len + 1) return {};
+    std::vector<unsigned char> key;
+    if (!LoadOrCreateSecretKey(key) || key.size() != k_key_len) return {};
+
+    const unsigned char* iv = blob.data();
+    const unsigned char* tag = blob.data() + k_gcm_iv_len;
+    size_t ctLen = blob.size() - k_gcm_iv_len - k_gcm_tag_len;
+    const unsigned char* ct = blob.data() + k_gcm_iv_len + k_gcm_tag_len;
+
+    void* ctx = f.EVP_CIPHER_CTX_new();
+    if (!ctx) return {};
+    std::vector<unsigned char> out(ctLen + 16, 0);
+    int len = 0, finalLen = 0;
+    std::vector<unsigned char> tagCopy(tag, tag + k_gcm_tag_len);
+    bool ok = f.EVP_CipherInit_ex(ctx, f.EVP_aes_256_gcm(), nullptr, nullptr, nullptr, 0) == 1 &&
+              f.EVP_CIPHER_CTX_ctrl(ctx, k_ctrl_aead_set_ivlen, static_cast<int>(k_gcm_iv_len), nullptr) == 1 &&
+              f.EVP_CipherInit_ex(ctx, nullptr, nullptr, key.data(), iv, 0) == 1 &&
+              f.EVP_CipherUpdate(ctx, out.data(), &len, ct, static_cast<int>(ctLen)) == 1 &&
+              f.EVP_CIPHER_CTX_ctrl(ctx, k_ctrl_aead_set_tag, static_cast<int>(k_gcm_tag_len), tagCopy.data()) == 1 &&
+              f.EVP_CipherFinal_ex(ctx, out.data() + len, &finalLen) == 1;
+    f.EVP_CIPHER_CTX_free(ctx);
+    if (!ok) return {};   // tag nao bate certo: chave diferente ou blob adulterado
+    return std::string(reinterpret_cast<const char*>(out.data()), ctLen);
+}
+
+#endif
+
+// As duas helpers de largo so alimentam o WinHTTP: em Linux o transporte vai em UTF-8 directo.
+#ifdef _WIN32
 std::wstring Utf8ToWide(const std::string& s) {
     if (s.empty()) return {};
     int n = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
@@ -230,6 +444,126 @@ HttpResult ExecuteHttp(const std::string& method, const std::string& url,
     res.ok = (res.status >= 200 && res.status < 300);
     return res;
 }
+
+#else
+
+// O gemelo do WinHTTP e o libcurl, tambem resolvido por dlopen. Os numeros das opcoes foram lidos por
+// EFEITO nesta maquina (servidor eco local), nao de memoria, porque a memoria ja falhou duas vezes:
+//   10002 URL | 20011 WRITEFUNCTION | 10001 WRITEDATA | 10036 CUSTOMREQUEST | 10023 HTTPHEADER
+//   10015 POSTFIELDS | 60 POSTFIELDSIZE | 78 CONNECTTIMEOUT | 13 TIMEOUT | getinfo 0x200002 = codigo HTTP
+// A verificacao TLS fica no valor de omissao do libcurl: contra um certificado auto-assinado o pedido
+// devolve 60 sem definirmos nada, por isso uma extremidade falsa nao passa. Nada e reencaminhado por
+// redirecao, tal como no Windows, e sem o libcurl disponivel a rota devolve erro em vez de fingir sucesso.
+struct CurlFunctions {
+    void* (*easy_init)() = nullptr;
+    void (*easy_cleanup)(void*) = nullptr;
+    int (*easy_setopt)(void*, unsigned int, ...) = nullptr;
+    int (*easy_perform)(void*) = nullptr;
+    int (*easy_getinfo)(void*, unsigned int, ...) = nullptr;
+    const char* (*easy_strerror)(int) = nullptr;
+    void* (*slist_append)(void*, const char*) = nullptr;
+    void (*slist_free_all)(void*) = nullptr;
+    int (*global_init)(long) = nullptr;
+    bool loaded = false;
+};
+
+constexpr unsigned int k_curl_url = 10002u;
+constexpr unsigned int k_curl_writedata = 10001u;
+constexpr unsigned int k_curl_writefunction = 20011u;
+constexpr unsigned int k_curl_connecttimeout = 78u;
+constexpr unsigned int k_curl_timeout = 13u;
+constexpr unsigned int k_curl_customrequest = 10036u;
+constexpr unsigned int k_curl_httpheader = 10023u;
+constexpr unsigned int k_curl_postfields = 10015u;
+constexpr unsigned int k_curl_postfieldsize = 60u;
+constexpr unsigned int k_curlinfo_response_code = 0x200002u;
+
+const CurlFunctions& Curl() {
+    static CurlFunctions f;
+    static bool attempted = false;
+    if (attempted) return f;
+    attempted = true;
+    void* h = dlopen("libcurl.so.4", RTLD_NOW | RTLD_LOCAL);
+    if (!h) h = dlopen("libcurl.so.3", RTLD_NOW | RTLD_LOCAL);
+    if (!h) h = dlopen("libcurl.so", RTLD_NOW | RTLD_LOCAL);
+    if (!h) return f;
+    f.easy_init = reinterpret_cast<decltype(f.easy_init)>(dlsym(h, "curl_easy_init"));
+    f.easy_cleanup = reinterpret_cast<decltype(f.easy_cleanup)>(dlsym(h, "curl_easy_cleanup"));
+    f.easy_setopt = reinterpret_cast<decltype(f.easy_setopt)>(dlsym(h, "curl_easy_setopt"));
+    f.easy_perform = reinterpret_cast<decltype(f.easy_perform)>(dlsym(h, "curl_easy_perform"));
+    f.easy_getinfo = reinterpret_cast<decltype(f.easy_getinfo)>(dlsym(h, "curl_easy_getinfo"));
+    f.easy_strerror = reinterpret_cast<decltype(f.easy_strerror)>(dlsym(h, "curl_easy_strerror"));
+    f.slist_append = reinterpret_cast<decltype(f.slist_append)>(dlsym(h, "curl_slist_append"));
+    f.slist_free_all = reinterpret_cast<decltype(f.slist_free_all)>(dlsym(h, "curl_slist_free_all"));
+    f.global_init = reinterpret_cast<decltype(f.global_init)>(dlsym(h, "curl_global_init"));
+    f.loaded = f.easy_init && f.easy_cleanup && f.easy_setopt && f.easy_perform && f.easy_getinfo &&
+               f.easy_strerror && f.slist_append && f.slist_free_all && f.global_init;
+    if (f.loaded && f.global_init(3L) != 0) f.loaded = false;
+    return f;
+}
+
+size_t CurlWriteSink(char* data, size_t size, size_t nmemb, void* user) {
+    size_t bytes = size * nmemb;
+    if (user && bytes) {
+        static_cast<std::string*>(user)->append(data, bytes);
+    }
+    return bytes;
+}
+
+HttpResult ExecuteHttp(const std::string& method, const std::string& url,
+                        const std::string& body,
+                        const std::vector<std::string>& extraHeaders) {
+    HttpResult res;
+    const CurlFunctions& cf = Curl();
+    if (!cf.loaded) {
+        res.error = "Libcurl indisponivel neste sistema: nao ha transporte HTTP para a IA";
+        return res;
+    }
+    void* h = cf.easy_init();
+    if (!h) {
+        res.error = "Falha ao criar sessao HTTP";
+        return res;
+    }
+    std::string headersBlob = "Accept: application/json";
+    std::vector<std::string> headerLines;
+    if (!body.empty()) headerLines.push_back("Content-Type: application/json; charset=utf-8");
+    for (const auto& hd : extraHeaders) headerLines.push_back(hd);
+
+    void* slist = nullptr;
+    for (const auto& hd : headerLines) slist = cf.slist_append(slist, hd.c_str());
+
+    cf.easy_setopt(h, k_curl_url, url.c_str());
+    cf.easy_setopt(h, k_curl_customrequest, method.c_str());
+    cf.easy_setopt(h, k_curl_writefunction, &CurlWriteSink);
+    cf.easy_setopt(h, k_curl_writedata, &res.body);
+    cf.easy_setopt(h, k_curl_connecttimeout, 15L);
+    cf.easy_setopt(h, k_curl_timeout, 30L);
+    if (slist) cf.easy_setopt(h, k_curl_httpheader, slist);
+    if (!body.empty()) {
+        cf.easy_setopt(h, k_curl_postfields, body.c_str());
+        cf.easy_setopt(h, k_curl_postfieldsize, static_cast<long>(body.size()));
+    }
+
+    int rc = cf.easy_perform(h);
+    if (slist) cf.slist_free_all(slist);
+    if (rc != 0) {
+        res.error = "Falha no pedido HTTP para a IA (" + std::to_string(rc) + ": " + cf.easy_strerror(rc) + ")";
+        cf.easy_cleanup(h);
+        return res;
+    }
+    long statusCode = 0;
+    if (cf.easy_getinfo(h, k_curlinfo_response_code, &statusCode) == 0) {
+        res.status = static_cast<int>(statusCode);
+    }
+    cf.easy_cleanup(h);
+    res.ok = (res.status >= 200 && res.status < 300);
+    if (!res.ok && res.error.empty()) {
+        res.error = "A IA respondeu com o estado HTTP " + std::to_string(res.status);
+    }
+    return res;
+}
+
+#endif
 
 } // namespace
 
@@ -420,13 +754,13 @@ void AiAssistantManager::SaveSettings() {
     if (m_apiKey.empty()) {
         db.SetSetting("ai_api_key", "");
     } else {
-        std::string enc = ProtectApiKeyDpapi(m_apiKey);
+        std::string enc = ProtectApiKey(m_apiKey);
         if (enc.empty()) {
             // Sem fallback para texto puro: melhor a chave sumir do que vazar em claro no banco
             db.SetSetting("ai_api_key", "");
-            OPIT_LOG_ERROR("AiAssistantManager: Falha DPAPI ao proteger a chave de API; chave NAO foi persistida.");
+            OPIT_LOG_ERROR("AiAssistantManager: Falha no armazenamento protegido da plataforma ao proteger a chave de API; chave NAO foi persistida.");
         } else {
-            db.SetSetting("ai_api_key", "DPAPI1:" + enc);
+            db.SetSetting("ai_api_key", k_protected_key_marker + enc);
         }
     }
     db.SetSetting("ai_provider", std::to_string(static_cast<int>(m_provider)));
@@ -441,20 +775,20 @@ void AiAssistantManager::SaveSettings() {
 void AiAssistantManager::LoadSettings() {
     auto& db = DatabaseManager::Instance();
     std::string storedKey = db.GetSetting("ai_api_key", "");
-    if (storedKey.rfind("DPAPI1:", 0) == 0) {
-        m_apiKey = UnprotectApiKeyDpapi(storedKey.substr(7));
+    if (storedKey.rfind(k_protected_key_marker, 0) == 0) {
+        m_apiKey = UnprotectApiKey(storedKey.substr(k_protected_key_marker_len));
         if (m_apiKey.empty()) {
             OPIT_LOG_WARN("AiAssistantManager: chave de API protegida nao pôde ser descriptografada neste usuario/maquina. Reinsira a chave.");
         }
     } else if (!storedKey.empty()) {
         // Migração de legado: chave em texto puro -> protege agora e regrava no banco
         m_apiKey = storedKey;
-        std::string enc = ProtectApiKeyDpapi(storedKey);
+        std::string enc = ProtectApiKey(storedKey);
         if (!enc.empty()) {
-            db.SetSetting("ai_api_key", "DPAPI1:" + enc);
-            OPIT_LOG_INFO("AiAssistantManager: chave de API migrada para armazenamento protegido por DPAPI.");
+            db.SetSetting("ai_api_key", k_protected_key_marker + enc);
+            OPIT_LOG_INFO("AiAssistantManager: chave de API migrada para o armazenamento protegido da plataforma.");
         } else {
-            OPIT_LOG_ERROR("AiAssistantManager: falha DPAPI na migracao da chave de API; texto puro removido do banco.");
+            OPIT_LOG_ERROR("AiAssistantManager: falha no armazenamento protegido da plataforma na migracao da chave de API; texto puro removido do banco.");
             db.SetSetting("ai_api_key", "");
         }
     } else {

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "DatabaseManager.h"
 #include "HardwareKnowledgeBase.h"
 #include "Logger.h"
@@ -17,7 +20,13 @@ static std::string CurrentIsoTimestamp() {
     auto now = std::chrono::system_clock::now();
     auto time = std::chrono::system_clock::to_time_t(now);
     std::tm tm{};
+#ifdef _WIN32
     localtime_s(&tm, &time);
+#else
+    // A libc nao tem localtime_s: o equivalente reentrante chama-se localtime_r e leva os
+    // argumentos na ordem inversa. Sem isto o carimbo de hora do banco nao compilava em Linux.
+    localtime_r(&time, &tm);
+#endif
     std::ostringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     return ss.str();

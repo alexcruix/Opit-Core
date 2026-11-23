@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "MainWindow.h"
 #include "UnifiedSettingsWindow.h"
 #include "AdvancedModuleDialogs.h"
@@ -1437,20 +1440,20 @@ void MainWindow::CreateTabControls(HWND hwnd) {
     regControl(m_tab12Controls, CreateWindowW(L"BUTTON", L"IA Copilot / Diagnostico...", WS_CHILD | BS_PUSHBUTTON, startX + 320, 480, 220, 30, hwnd, (HMENU)(UINT_PTR)ID_BTN_OPEN_AI, m_hInstance, nullptr), m_hFontBold);
     m_lblDiagStatus = regControl(m_tab12Controls, CreateWindowW(L"STATIC", L"Registros operacionais em tempo real.", WS_CHILD | SS_LEFT | SS_NOPREFIX, startX + 550, 485, 250, 22, hwnd, nullptr, m_hInstance, nullptr));
 
-    // Tab 13: Sobre & Código Aberto
+    // Tab 13: Sobre & Licença
     {
-        m_lblAboutTitle = regControl(m_tab13Controls, CreateWindowW(L"STATIC", L"Sobre o Opit-Core — código aberto, doado, e seu.",
+        m_lblAboutTitle = regControl(m_tab13Controls, CreateWindowW(L"STATIC", L"Sobre o Opit-Core — gratuito para uso, código disponível e transparente.",
             WS_CHILD | SS_LEFT | SS_NOPREFIX, startX, 60, 780, 26, hwnd, nullptr, m_hInstance, nullptr), m_hFontTitle);
 
         struct AboutLine { const wchar_t* text; bool strong; };
         static const AboutLine kAboutLines[] = {
-            { L"Feito por ACSTCLab (alexcstos@gmail.com). Começou como um jeito de domar a velocidade do processador", false },
-            { L"e virou um gerenciador completo de CPU, GPU, ventoinhas, memória, serviços e planos de energia.", false },
+            { L"Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com). Começou como um jeito de domar a velocidade", false },
+            { L"do processador e virou um gerenciador completo de CPU, GPU, ventoinhas, memória, serviços e energia.", false },
             { L"", false },
-            { L"POR QUE ABERTO", true },
-            { L"O Opit-Core é donationware e código aberto sob a licença GPL-3.0-only. Usar, estudar, modificar e", false },
-            { L"redistribuir são liberdades suas, não favores nossos. A única corrente que colocamos no seu uso é", false },
-            { L"esta: se você publicar uma versão mudada, que ela venha com a mesma licença e o mesmo código à vista.", false },
+            { L"LICENÇA (POLYFORM SHIELD 1.0.0)", true },
+            { L"O Opit-Core é donationware com código-fonte disponível sob a PolyForm Shield License 1.0.0.", false },
+            { L"Qualquer pessoa ou empresa pode usar, estudar e modificar gratuitamente para uso próprio/interno.", false },
+            { L"É proibido a terceiros vender ou oferecer produto concorrente. Software fornecido SEM GARANTIA.", false },
             { L"", false },
             { L"COMO USAR, SEM PEGADINHA", true },
             { L"Sem ativação, sem chave, sem cadastro, sem servidor: instalar e usar. Funciona 100% offline.", false },
@@ -1458,7 +1461,7 @@ void MainWindow::CreateTabControls(HWND hwnd) {
             { L"Tudo que ele faz é reversível: lê antes de escrever, e cada mudança tem diário de recuperação.", false },
             { L"", false },
             { L"ONDE RODA", true },
-            { L"Windows 10 e Windows 11, 64 bits.", false },
+            { L"Windows 10 e Windows 11 (x64 e x86).", false },
         };
         for (const auto& line : kAboutLines) {
             HWND h = CreateWindowW(L"STATIC", line.text, WS_CHILD | SS_LEFT | SS_NOPREFIX, startX, 96, 780, 20,

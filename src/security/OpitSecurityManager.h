@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #pragma once
 
 #include <string>
@@ -37,7 +40,13 @@ public:
     /**
      * Valida e carrega um modulo DLL usando a politica rigorosa de integridade e protecao TOCTOU.
      */
+#ifdef _WIN32
     HMODULE LoadVerifiedModule(const std::wstring& relativePath, IntegrityStatus& outStatus);
+#else
+    // Em Linux o handle e o ponteiro do dlopen(); a politica e a mesma: hash provado no manifesto
+    // assinado antes de qualquer carregamento.
+    void* LoadVerifiedModule(const std::wstring& relativePath, IntegrityStatus& outStatus);
+#endif
 
     /**
      * Verifica se um componente especifico esta autorizado para execucao (sem eventos graves pendentes).

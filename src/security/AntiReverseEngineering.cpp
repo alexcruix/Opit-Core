@@ -1,10 +1,29 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "AntiReverseEngineering.h"
+
+#ifdef _WIN32
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
 #include <intrin.h>
+
+#else
+
+#include <elf.h>
+#include <link.h>
+#if defined(__x86_64__) || defined(__i386__)
+#include <x86intrin.h>
+#endif
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#endif
 
 namespace opitcore {
 namespace security {
@@ -24,6 +43,8 @@ uint64_t AntiReverseEngineering::ComputeSectionChecksum(const uint8_t* data, siz
     }
     return hash;
 }
+
+#ifdef _WIN32
 
 static bool CheckPebDebugFlags() {
 #if defined(_M_X64) || defined(__x86_64__)
@@ -112,6 +133,86 @@ bool AntiReverseEngineering::InitializeCodeSectionBaseline() {
     }
     return false;
 }
+
+#else
+
+namespace {
+
+struct ExecSegment {
+    uintptr_t addr = 0;
+    size_t size = 0;
+    bool found = false;
+};
+
+// O programa principal e a unica entrada sem nome na lista de objetos carregados. O segmento
+// PT_LOAD com a bit de execucao faz neste sistema o papel da secao .text do PE: e o codigo em
+// memoria onde um breakpoint de software (0xCC), um patch de bytes ou um hook se deixam ver.
+int CollectExecSegment(struct dl_phdr_info* info, size_t /*size*/, void* data) {
+    ExecSegment* out = static_cast<ExecSegment*>(data);
+    if (out->found) return 0;
+    if (info->dlpi_name != nullptr && info->dlpi_name[0] != '\0') return 0;
+    for (uint16_t i = 0; i < info->dlpi_phnum; ++i) {
+        const ElfW(Phdr)& ph = info->dlpi_phdr[i];
+        if (ph.p_type == PT_LOAD && (ph.p_flags & PF_X)) {
+            out->addr = static_cast<uintptr_t>(info->dlpi_addr + ph.p_vaddr);
+            out->size = static_cast<size_t>(ph.p_memsz);
+            out->found = out->size > 0;
+            return 0;
+        }
+    }
+    return 0;
+}
+
+} // namespace
+
+bool AntiReverseEngineering::DetectDebugger() {
+    // O pai de depuracao ve-se em /proc/self/status: TracerPid diferente de zero significa que
+    // outro processo tem este sob ptrace agora (gdb, strace, attach de engenharia reversa).
+    // Nao ha equivalente do NtGlobalFlag nem dos registradores DR lidos sobre o proprio
+    // processo: ler DR exige ser o tracee de outro, e por isso aqui nao e afirmado nada.
+    FILE* status = fopen("/proc/self/status", "re");
+    if (!status) return false;
+    char line[256];
+    while (fgets(line, sizeof(line), status)) {
+        if (strncmp(line, "TracerPid:", 10) == 0) {
+            unsigned long tracer = strtoul(line + 10, nullptr, 10);
+            fclose(status);
+            return tracer != 0;
+        }
+    }
+    fclose(status);
+    return false;
+}
+
+bool AntiReverseEngineering::DetectTimingAnomaly() {
+#if defined(__x86_64__) || defined(__i386__)
+    unsigned long long start = __rdtsc();
+    volatile int dummy = 0;
+    for (int i = 0; i < 200; ++i) {
+        dummy += (i * 7) ^ 0x3F;
+    }
+    unsigned long long end = __rdtsc();
+    return (end - start) > 500000;
+#else
+    // Fora de x86 nao ha rdtsc e o limiar de 500.000 ciclos nao tem unidade: sem medida nao se
+    // declara anomalia nenhuma, em vez de se inventar um veredicto com outro relogio.
+    return false;
+#endif
+}
+
+bool AntiReverseEngineering::InitializeCodeSectionBaseline() {
+    ExecSegment seg;
+    dl_iterate_phdr(CollectExecSegment, &seg);
+    if (!seg.found) return false;
+
+    s_textSectionAddr = reinterpret_cast<const uint8_t*>(seg.addr);
+    s_textSectionSize = seg.size;
+    s_baselineTextChecksum = ComputeSectionChecksum(s_textSectionAddr, s_textSectionSize);
+    s_baselineInitialized = true;
+    return true;
+}
+
+#endif
 
 bool AntiReverseEngineering::VerifyCodeSectionIntegrity() {
     if (!s_baselineInitialized || !s_textSectionAddr || s_textSectionSize == 0) {

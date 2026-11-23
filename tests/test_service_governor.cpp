@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 // Teste do reconciliador de servicos: as provas de retorno, a matriz de niveis e as travas.
 // Nada aqui pausa um servico real: o que o teste prova e a DECISAO (e as recusas de nomes criticos),
 // porque encostar no SCM de verdade e trabalho para a evidencia do app dirigido, nao do teste de unidade.

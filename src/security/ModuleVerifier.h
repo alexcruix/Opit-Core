@@ -1,8 +1,13 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #pragma once
 
 #include <string>
 #include <vector>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include "SecurityTypes.h"
 
 namespace opitcore {
@@ -23,9 +28,17 @@ public:
      * Verifica o hash de uma DLL antes de realizar o carregamento nativo.
      * Se válida, carrega via LoadLibraryExW com flags seguras.
      */
+#ifdef _WIN32
     HMODULE VerifyAndLoad(const std::wstring& moduleFullPath,
                           const std::string& expectedSha256,
                           IntegrityStatus& outStatus);
+#else
+    // Em Linux o modulo e um .so e o handle e o ponteiro devolvido por dlopen(). A condicao de
+    // carregamento e a mesma: hash provado primeiro, caminho absoluto, nada entra sem prova.
+    void* VerifyAndLoad(const std::wstring& moduleFullPath,
+                        const std::string& expectedSha256,
+                        IntegrityStatus& outStatus);
+#endif
 
     /**
      * Enumera e audita módulos já carregados no espaço de endereçamento do processo.

@@ -1,7 +1,24 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #pragma once
 #include "platform/windows/ProcessManager.h"
 #include "utils/Types.h"
+#ifdef _WIN32
 #include <windows.h> // classes de prioridade (IDLE_/BELOW_NORMAL_/..._PRIORITY_CLASS)
+#else
+// Os seis niveis da escada de prioridades, com os MESMOS numeros que o Windows lhes da (medidos
+// em WinBase.h do SDK 10.0.26100.0: NORMAL 0x20, IDLE 0x40, HIGH 0x80, REALTIME 0x100,
+// BELOW_NORMAL 0x4000, ABOVE_NORMAL 0x8000). Guardar a mesma escala quer dizer que um pedido de
+// prioridade escrito na configuracao ou no diario se le igual nos dois sistemas operativos; a
+// traducao para `nice` de Linux faz-se no gemelo do ProcessManager, nao aqui.
+#define IDLE_PRIORITY_CLASS         0x00000040u
+#define BELOW_NORMAL_PRIORITY_CLASS 0x00004000u
+#define NORMAL_PRIORITY_CLASS       0x00000020u
+#define ABOVE_NORMAL_PRIORITY_CLASS 0x00008000u
+#define HIGH_PRIORITY_CLASS         0x00000080u
+#define REALTIME_PRIORITY_CLASS     0x00000100u
+#endif
 #include <cstdint>
 #include <string>
 #include <unordered_map>

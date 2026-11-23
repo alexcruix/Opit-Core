@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #pragma once
 #include <string>
 #include <vector>
@@ -5,7 +8,29 @@
 #include <unordered_map>
 #include <cstdint>
 #include <mutex>
+#ifdef _WIN32
 #include <windows.h>
+#else
+// Os numeros que o SCM da aos estados e aos controlos, repetidos aqui com os mesmos valores
+// (WinBase.h do SDK 10.0.26100.0, medidos no cabecalho). O HostInfo desta classe guarda o estado
+// do unit nestes mesmos bits, pelo que o reconciliador — que e um so e decide em cima deles —
+// funciona identico nos dois sistemas: em Linux "active" vale SERVICE_RUNNING porque e a mesma
+// pergunta feita a outra fonte. Os unicos valores novos desta lista sao os que o systemd nao tem
+// (PAUSE/CONTINUE) e mesmo assim mantemos o numero do Windows: o gemelo nunca os escreve.
+#define SERVICE_STOPPED 0x00000001u
+#define SERVICE_START_PENDING 0x00000002u
+#define SERVICE_STOP_PENDING 0x00000003u
+#define SERVICE_RUNNING 0x00000004u
+#define SERVICE_CONTINUE_PENDING 0x00000005u
+#define SERVICE_PAUSE_PENDING 0x00000006u
+#define SERVICE_PAUSED 0x00000007u
+#define SERVICE_ACCEPT_STOP 0x00000001u
+#define SERVICE_ACCEPT_PAUSE_CONTINUE 0x00000002u
+#define SERVICE_ACCEPT_SHUTDOWN 0x00000004u
+#define SERVICE_CONTROL_STOP 0x00000001u
+#define SERVICE_CONTROL_PAUSE 0x00000002u
+#define SERVICE_CONTROL_CONTINUE 0x00000003u
+#endif
 
 namespace opitcore {
 
@@ -210,8 +235,15 @@ private:
         uint32_t pid = 0;
         int servicesInHost = 0; // > 1 = divididos com outros servicos: pausar atinge quem nao pedimos
         uint64_t workingSetMB = 0;
+#ifdef _WIN32
         DWORD controlsAccepted = 0;
         DWORD state = 0;
+#else
+        // Mesma largura do DWORD e os mesmos bits SERVICE_*_Accepted / SERVICE_STATE_*; em
+        // Linux o gemelo do systemd guarda aqui o estado do unit (ActiveState/SubState).
+        uint32_t controlsAccepted = 0;
+        uint32_t state = 0;
+#endif
         bool known = false;
     };
     void RefreshHostCache(uint64_t nowMs);

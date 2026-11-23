@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 // Prova do guardiao de integridade de modo: o modo declarado pela usuaria tem que sobreviver a qualquer
 // agente que mexa no sistema depois dela. Cada check mede o powrprof de volta; nenhum check mede adjetivo.
 #include "adaptive/AdaptiveEngine.h"

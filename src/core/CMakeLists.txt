@@ -38,7 +38,7 @@ target_link_libraries(opitcore_core
     opitcore_power
     opitcore_protection
     opitcore_control
-    opitcore_platform_windows
+    ${OPITCORE_PLATFORM_LIB}
     opitcore_adaptive
     opitcore_ai
 )

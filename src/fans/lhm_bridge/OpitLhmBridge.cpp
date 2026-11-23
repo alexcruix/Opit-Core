@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 // C++/CLI bridge between the native Opit-Core and LibreHardwareMonitorLib.
 // Compiled with /clr (see lhm_bridge/CMakeLists.txt). Only this target uses .NET.
 // The managed logic was moved from src/fans/LibreHardwareMonitorCLI.cpp; sensor

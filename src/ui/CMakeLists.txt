@@ -26,7 +26,7 @@ target_link_libraries(opitcore_ui
     opitcore_power
     opitcore_protection
     opitcore_control
-    opitcore_platform_windows
+    ${OPITCORE_PLATFORM_LIB}
     opitcore_utils
     opitcore_ai
     dwmapi

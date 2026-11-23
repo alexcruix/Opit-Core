@@ -1,10 +1,15 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #pragma once
 #include "utils/Types.h"
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#ifdef _WIN32
 #include <windows.h> // DWORD no SetPriority (erro de OpenProcess/SetPriorityClass)
+#endif
 
 namespace opitcore {
 
@@ -32,10 +37,17 @@ class ProcessManager {
 public:
     static std::vector<ProcessItem> EnumerateProcesses();
     static bool IsCriticalProcess(const std::string& processName);
+#ifdef _WIN32
     static bool SetPriority(uint32_t pid, uint32_t priorityClass, DWORD* lastErrorOut = nullptr);
     // Handle ja aberto (PROCESS_QUERY_LIMITED_INFORMATION): diz se o kernel protege o processo (PPL/PP),
     // caso em que nenhuma escrita de prioridade e possivel - nem admin, nem SYSTEM, nem certificado.
     static bool IsProtectedHandle(HANDLE hProcess);
+#else
+    // Em Linux o numero devolvido e o errno da escrita (setpriority / sched_setattr), nao um
+    // codigo do Windows. Nao ha handle aberto para perguntar se o processo e protegido: a
+    // proteccao ve-se no proprio errno (EPERM), por isso IsProtectedHandle nao tem gemelo.
+    static bool SetPriority(uint32_t pid, uint32_t priorityClass, uint32_t* lastErrorOut = nullptr);
+#endif
     static bool SetAffinity(uint32_t pid, uint64_t affinityMask);
     static bool SetEcoQoS(uint32_t pid, bool enable);
     static bool Terminate(uint32_t pid);

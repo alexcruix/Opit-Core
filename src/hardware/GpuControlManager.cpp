@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
+// Todo este ficheiro e o caminho Windows: NVAPI, ADL/ADLX e IGCL so existem como
+// bibliotecas do Windows, carregadas por LoadLibraryW. O gemelo do Linux, com NVML e
+// sysfs, esta em GpuControlManagerLinux.cpp e preenche a mesma classe.
+#ifdef _WIN32
 #include "GpuControlManager.h"
 #include "platform/windows/GpuDetector.h"
 #include "core/Logger.h"
@@ -1095,3 +1102,4 @@ void GpuControlManager::ClearMockGpu() {
 }
 
 } // namespace opitcore
+#endif // _WIN32 (caminho NVAPI/ADLX/IGCL; o gemelo Linux esta em GpuControlManagerLinux.cpp)

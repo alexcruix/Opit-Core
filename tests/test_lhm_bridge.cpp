@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 // Integration test for opitcore_lhm_bridge.dll (C++/CLI bridge to LibreHardwareMonitor).
 // Exercises the real runtime-loading path used by LibreHardwareMonitorFanProvider and
 // prints the actual sensor values reported by the hardware. Zero sensors is not a

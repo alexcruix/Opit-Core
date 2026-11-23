@@ -1,6 +1,11 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "ManifestVerifier.h"
 #include "core/Logger.h"
 #include <nlohmann/json.hpp>
+
+#ifdef _WIN32
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -12,6 +17,17 @@
 
 #pragma comment(lib, "crypt32.lib")
 #pragma comment(lib, "advapi32.lib")
+
+#else
+
+#include "utils/StringUtils.h"
+#include <cstring>
+#include <dlfcn.h>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+#endif
 
 namespace opitcore {
 namespace security {
@@ -27,6 +43,8 @@ constexpr char k_official_spki_b64[] =
     "G2zUcp+Q+buKaB8kmjXsT5A35MW5B67moYYY0s4I7IbCsS1mXUB06nu3RUvsn3Ac"
     "VrpDrqRJtHWnwXzbIICBV+VQsq4g33PN7yXAOtps58LLrctEMjWflQcJXJzJ6PJp"
     "yQIDAQAB";
+
+#ifdef _WIN32
 
 bool Base64Decode(const std::string& in, std::vector<BYTE>& out) {
     if (in.empty()) return false;
@@ -98,6 +116,116 @@ bool VerifyRsaSha256(const std::string& payload, const std::string& signatureB64
     return ok;
 }
 
+#else
+
+// Os simbolos EVP e d2i do libcrypto sao resolvidos em tempo de execucao (dlopen), como o NVAPI e
+// o DWM no Windows. Provar a assinatura exige-os: sem eles a rota devolve false e o manifesto e
+// classificado como UntrustedSignature. Nada e jamais declarado integro por falta de medio.
+struct CryptoFunctions {
+    const void* (*EVP_sha256)() = nullptr;
+    void* (*EVP_MD_CTX_new)() = nullptr;
+    void (*EVP_MD_CTX_free)(void*) = nullptr;
+    int (*EVP_DigestVerifyInit)(void*, void**, const void*, void*, void*) = nullptr;
+    int (*EVP_DigestVerifyUpdate)(void*, const void*, size_t) = nullptr;
+    int (*EVP_DigestVerifyFinal)(void*, const unsigned char*, size_t) = nullptr;
+    void (*EVP_PKEY_free)(void*) = nullptr;
+    void* (*d2i_PUBKEY)(void**, const unsigned char**, long) = nullptr;
+    bool loaded = false;
+};
+
+const CryptoFunctions& Crypto() {
+    static CryptoFunctions f;
+    static bool attempted = false;
+    if (attempted) return f;
+    attempted = true;
+    void* h = dlopen("libcrypto.so.3", RTLD_NOW | RTLD_LOCAL);
+    if (!h) h = dlopen("libcrypto.so", RTLD_NOW | RTLD_LOCAL);
+    if (!h) return f;
+    f.EVP_sha256 = reinterpret_cast<decltype(f.EVP_sha256)>(dlsym(h, "EVP_sha256@@OPENSSL_3.0.0"));
+    if (!f.EVP_sha256) f.EVP_sha256 = reinterpret_cast<decltype(f.EVP_sha256)>(dlsym(h, "EVP_sha256"));
+    f.EVP_MD_CTX_new = reinterpret_cast<decltype(f.EVP_MD_CTX_new)>(dlsym(h, "EVP_MD_CTX_new"));
+    f.EVP_MD_CTX_free = reinterpret_cast<decltype(f.EVP_MD_CTX_free)>(dlsym(h, "EVP_MD_CTX_free"));
+    f.EVP_DigestVerifyInit =
+        reinterpret_cast<decltype(f.EVP_DigestVerifyInit)>(dlsym(h, "EVP_DigestVerifyInit"));
+    f.EVP_DigestVerifyUpdate =
+        reinterpret_cast<decltype(f.EVP_DigestVerifyUpdate)>(dlsym(h, "EVP_DigestVerifyUpdate"));
+    f.EVP_DigestVerifyFinal =
+        reinterpret_cast<decltype(f.EVP_DigestVerifyFinal)>(dlsym(h, "EVP_DigestVerifyFinal"));
+    f.EVP_PKEY_free = reinterpret_cast<decltype(f.EVP_PKEY_free)>(dlsym(h, "EVP_PKEY_free"));
+    f.d2i_PUBKEY = reinterpret_cast<decltype(f.d2i_PUBKEY)>(dlsym(h, "d2i_PUBKEY"));
+    f.loaded = f.EVP_sha256 && f.EVP_MD_CTX_new && f.EVP_MD_CTX_free && f.EVP_DigestVerifyInit &&
+               f.EVP_DigestVerifyUpdate && f.EVP_DigestVerifyFinal && f.EVP_PKEY_free && f.d2i_PUBKEY;
+    return f;
+}
+
+// Decodificador base64 de fluxo: mantem no maximo 8 bits por confirmar, por isso nenhum
+// caractere invalido consegue empurrar o acumulador para la do intervalo definido.
+bool Base64Decode(const std::string& in, std::vector<unsigned char>& out) {
+    static const char* kAlphabet =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    out.clear();
+    if (in.empty()) return false;
+
+    int val = 0;
+    int bits = 0;
+    for (size_t i = 0; i < in.size(); ++i) {
+        unsigned char c = static_cast<unsigned char>(in[i]);
+        if (c == '=') break;
+        if (c == '\r' || c == '\n' || c == ' ' || c == '\t' || c == '-') continue;
+        const char* found = static_cast<const char*>(std::memchr(kAlphabet, c, 64));
+        if (!found) return false;
+        val = (val << 6) | static_cast<int>(found - kAlphabet);
+        bits += 6;
+        if (bits >= 8) {
+            bits -= 8;
+            out.push_back(static_cast<unsigned char>((val >> bits) & 0xFF));
+            val &= (1 << bits) - 1;
+        }
+    }
+    return !out.empty();
+}
+
+bool VerifyRsaSha256(const std::string& payload, const std::string& signatureB64, const std::string& spkiB64) {
+    const CryptoFunctions& cf = Crypto();
+    if (!cf.loaded) return false;
+
+    std::vector<unsigned char> spki;
+    if (!Base64Decode(spkiB64, spki) || spki.empty()) {
+        return false;
+    }
+
+    std::vector<unsigned char> sig;
+    if (!Base64Decode(signatureB64, sig) || sig.empty()) {
+        return false;
+    }
+
+    // O SPKI (SubjectPublicKeyInfo ASN.1) e o mesmo DER que no Windows e dado ao
+    // CryptImportPublicKeyInfo; aqui entra direto no d2i_PUBKEY.
+    const unsigned char* derPtr = spki.data();
+    void* pkey = cf.d2i_PUBKEY(nullptr, &derPtr, static_cast<long>(spki.size()));
+    if (!pkey) return false;
+
+    void* ctx = cf.EVP_MD_CTX_new();
+    if (!ctx) {
+        cf.EVP_PKEY_free(pkey);
+        return false;
+    }
+
+    bool ok = false;
+    if (cf.EVP_DigestVerifyInit(ctx, nullptr, cf.EVP_sha256(), nullptr, pkey) == 1 &&
+        cf.EVP_DigestVerifyUpdate(ctx, payload.data(), payload.size()) == 1) {
+        // O OpenSSL recebe a assinatura como o inteiro em big-endian, tal como o arquivo base64:
+        // a invertagem que o CryptoAPI exigia nao tem equivalente aqui.
+        ok = (cf.EVP_DigestVerifyFinal(ctx, sig.data(), sig.size()) == 1);
+    }
+
+    cf.EVP_MD_CTX_free(ctx);
+    cf.EVP_PKEY_free(pkey);
+    return ok;
+}
+
+#endif
+
 } // namespace
 
 ManifestVerifier::ManifestVerifier() = default;
@@ -113,7 +241,14 @@ IntegrityStatus ManifestVerifier::VerifyAndLoad(const std::wstring& manifestPath
     outRecords.clear();
     outError.clear();
 
+#ifdef _WIN32
     std::ifstream manifestFile(manifestPath, std::ios::binary);
+#else
+    // O std::ifstream de libstdc++ aceita apenas o caminho em UTF-8: a conversao e a unica
+    // diferenca para o corpo identico do Windows.
+    std::string manifestUtf8 = StringUtils::ToUtf8(manifestPath);
+    std::ifstream manifestFile(manifestUtf8, std::ios::binary);
+#endif
     if (!manifestFile.is_open()) {
         outError = "Arquivo de manifesto nao encontrado";
         return IntegrityStatus::ManifestMissing;
@@ -124,7 +259,12 @@ IntegrityStatus ManifestVerifier::VerifyAndLoad(const std::wstring& manifestPath
     std::string jsonPayload = manifestSs.str();
     manifestFile.close();
 
+#ifdef _WIN32
     std::ifstream sigFile(signaturePath, std::ios::binary);
+#else
+    std::string signatureUtf8 = StringUtils::ToUtf8(signaturePath);
+    std::ifstream sigFile(signatureUtf8, std::ios::binary);
+#endif
     if (!sigFile.is_open()) {
         outError = "Arquivo de assinatura do manifesto nao encontrado";
         return IntegrityStatus::UntrustedSignature;

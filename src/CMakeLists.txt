@@ -6,7 +6,11 @@ add_subdirectory(metrics)
 add_subdirectory(power)
 add_subdirectory(protection)
 add_subdirectory(control)
-add_subdirectory(platform/windows)
+if(WIN32)
+  add_subdirectory(platform/windows)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_subdirectory(platform/linux)
+endif()
 add_subdirectory(adaptive)
 add_subdirectory(security)
 add_subdirectory(fans)
@@ -15,6 +19,13 @@ add_subdirectory(core)
 
 if(OPITCORE_BUILD_UI)
   add_subdirectory(ui)
+endif()
+
+# A partir daqui tudo e especifico do Windows: executavel GUI (.rc + manifesto PE), copia
+# do bridge .NET e gerador do manifesto assinado por PowerShell. Noutro SO ficam so as
+# bibliotecas declaradas acima; o que falta e o linker de cada teste que diz o nome.
+if(NOT WIN32)
+  return()
 endif()
 
 # Main executable

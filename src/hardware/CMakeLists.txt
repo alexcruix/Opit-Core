@@ -7,18 +7,22 @@ add_library(opitcore_hardware STATIC
   GpuControlManager.cpp
 )
 
+# O gemelo de controle de GPU em Linux fala NVML + sysfs; no Windows o ficheiro e inerte
+# (guarda #ifndef _WIN32), por isso entra so na lista de fontes nao-Windows.
+if(NOT WIN32)
+  target_sources(opitcore_hardware PRIVATE GpuControlManagerLinux.cpp)
+  target_link_libraries(opitcore_hardware PUBLIC ${CMAKE_DL_LIBS})
+endif()
+
 target_include_directories(opitcore_hardware
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/drivers.gpu.control-library-master/include
-    ${CMAKE_SOURCE_DIR}/nvapi-main
-    ${CMAKE_SOURCE_DIR}/ADLX-main/SDK/Include
-    ${CMAKE_SOURCE_DIR}/ADLX-main/SDK/ADLXHelper/Windows/Cpp
 )
 
 target_link_libraries(opitcore_hardware
   PUBLIC
     opitcore_utils
-    opitcore_platform_windows
+    ${OPITCORE_PLATFORM_LIB}
 )

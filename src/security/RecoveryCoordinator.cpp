@@ -1,9 +1,22 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "RecoveryCoordinator.h"
-#include <windows.h>
-#include <shellapi.h>
 #include <sstream>
 
+#ifdef _WIN32
+
+#include <windows.h>
+#include <shellapi.h>
+
 #pragma comment(lib, "shell32.lib")
+
+#else
+
+#include <sys/wait.h>
+#include <unistd.h>
+
+#endif
 
 namespace opitcore {
 namespace security {
@@ -33,8 +46,23 @@ std::string RecoveryCoordinator::BuildRecoveryNotice(const std::vector<SecurityE
 }
 
 bool RecoveryCoordinator::LaunchOfficialRepairPortal() const {
+#ifdef _WIN32
     HINSTANCE hRes = ShellExecuteA(nullptr, "open", GetOfficialRepairUrl(), nullptr, nullptr, SW_SHOWNORMAL);
     return reinterpret_cast<INT_PTR>(hRes) > 32;
+#else
+    // xdg-open e o equivalente do "open" do ShellExecuteA: entrega o URL ao desktop do utilizador.
+    // Se o binario nao existir, o filho sai com 127 e a funcao devolve false — nao ha sucesso
+    // inventado para o portal de reparo.
+    pid_t child = fork();
+    if (child < 0) return false;
+    if (child == 0) {
+        execlp("xdg-open", "xdg-open", GetOfficialRepairUrl(), static_cast<char*>(nullptr));
+        _exit(127);
+    }
+    int status = 0;
+    if (waitpid(child, &status, 0) < 0) return false;
+    return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+#endif
 }
 
 } // namespace security

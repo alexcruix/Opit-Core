@@ -1,7 +1,15 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "FileUtils.h"
 #include "StringUtils.h"
+#ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
+#else
+#include <cstdlib>
+#include <unistd.h>
+#endif
 #include <filesystem>
 
 namespace opitcore {
@@ -25,6 +33,7 @@ bool FileUtils::FileExists(const std::string& path) {
 }
 
 std::string FileUtils::GetAppDataDirectory() {
+#ifdef _WIN32
     wchar_t path[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path))) {
         std::string s = StringUtils::ToUtf8(path);
@@ -33,9 +42,25 @@ std::string FileUtils::GetAppDataDirectory() {
         return s;
     }
     return ".";
+#else
+    // Gemelo do %LOCALAPPDATA% no modelo XDG: XDG_DATA_HOME, ou ~/.local/share quando
+    // nao esta definido. A pasta propria do programa mantem-se o nome OpitCore.
+    const char* xdg = std::getenv("XDG_DATA_HOME");
+    const char* home = std::getenv("HOME");
+    std::string base = ".";
+    if (xdg != nullptr && *xdg != '\0') {
+        base = xdg;
+    } else if (home != nullptr && *home != '\0') {
+        base = std::string(home) + "/.local/share";
+    }
+    std::string s = base + "/OpitCore";
+    EnsureDirectory(s);
+    return s;
+#endif
 }
 
 std::string FileUtils::GetExecutableDirectory() {
+#ifdef _WIN32
     wchar_t path[MAX_PATH];
     if (GetModuleFileNameW(nullptr, path, MAX_PATH) > 0) {
         std::wstring ws(path);
@@ -46,6 +71,16 @@ std::string FileUtils::GetExecutableDirectory() {
         }
     }
     return ".";
+#else
+    char buf[4096];
+    ssize_t n = ::readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+    if (n > 0) {
+        buf[n] = '\0';
+        std::filesystem::path p(buf);
+        if (p.has_parent_path()) return p.parent_path().string();
+    }
+    return ".";
+#endif
 }
 
 std::string FileUtils::CombinePath(const std::string& dir, const std::string& filename) {
@@ -54,7 +89,11 @@ std::string FileUtils::CombinePath(const std::string& dir, const std::string& fi
     if (last == '\\' || last == '/') {
         return dir + filename;
     }
+#ifdef _WIN32
     return dir + "\\" + filename;
+#else
+    return dir + "/" + filename;
+#endif
 }
 
 } // namespace opitcore

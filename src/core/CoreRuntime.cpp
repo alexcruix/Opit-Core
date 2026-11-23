@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "CoreRuntime.h"
 #include "Logger.h"
 #include "DatabaseManager.h"
@@ -21,6 +24,11 @@
 #include <thread>
 #include <sstream>
 #include <iomanip>
+
+#ifndef _WIN32
+// getpid(): o equivalente do GetCurrentProcessId, usado no ciclo de processos.
+#include <unistd.h>
+#endif
 
 namespace opitcore {
 
@@ -653,7 +661,11 @@ void CoreRuntime::WorkerLoop() {
                         gin.isGameRunning = snap.isGameRunning;
                         auto activeGames = m_gameDetector.GetActiveGames();
                         gin.gameProcessName = activeGames.empty() ? std::string() : activeGames.front();
+#ifdef _WIN32
                         gin.selfPid = GetCurrentProcessId();
+#else
+                        gin.selfPid = static_cast<uint32_t>(getpid());
+#endif
                         gin.excludedList = adv.processes.excludedProcesses;
 
                         ProcessGovernorSettings gs;
@@ -672,11 +684,21 @@ void CoreRuntime::WorkerLoop() {
                     }
                 } else {
                     // Modo manual ou foco primario
+#ifdef _WIN32
                     HWND fgWnd = GetForegroundWindow();
                     if (fgWnd) {
                         DWORD fgPid = 0;
                         GetWindowThreadProcessId(fgWnd, &fgPid);
                         if (fgPid > 4 && fgPid != GetCurrentProcessId()) {
+#else
+                    // A janela frontal em Linux vem do X11 (XGetInputFocus + _NET_WM_PID), pelo
+                    // mesmo caminho que o motor adaptativo ja usa; sem X disponivel o pid vem 0
+                    // e esta rota nao escreve prioridade nenhuma, em vez de chutar um processo.
+                    AppIdentity fgApp = AppProfileManager::Instance().IdentifyForegroundWindow();
+                    if (fgApp.pid > 4) {
+                        uint32_t fgPid = fgApp.pid;
+                        if (fgPid != static_cast<uint32_t>(getpid())) {
+#endif
                             auto procId = AppProfileManager::Instance().IdentifyProcess(fgPid);
                             if (!ProcessManager::IsCriticalProcess(procId.processName) && !adv.processes.IsProcessExcluded(procId.processName)) {
                                 uint32_t prio = ABOVE_NORMAL_PRIORITY_CLASS;

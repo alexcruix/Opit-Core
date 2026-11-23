@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "OpitSecurityManager.h"
 #include "SecurityPolicy.h"
 #include "RecoveryCoordinator.h"
@@ -5,6 +8,29 @@
 #include "core/Logger.h"
 #include "utils/StringUtils.h"
 #include "security/OpitSecrets.h"
+
+#ifdef _WIN32
+
+#include <windows.h>
+
+#else
+
+#include <limits.h>
+#include <unistd.h>
+#include <chrono>
+#include <cstdint>
+
+namespace {
+
+// Equivalente do GetTickCount64 do Windows para as marcas de tempo dos eventos de seguranca.
+uint64_t NowMs() {
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count());
+}
+
+} // namespace
+
+#endif
 
 namespace opitcore {
 namespace security {
@@ -33,24 +59,49 @@ bool OpitSecurityManager::Initialize(const std::wstring& appDirectory) {
     m_appDir = appDirectory;
     ModuleVerifier::EnforceSecureDllSearchOrder();
     m_initialized = true;
+#ifdef _WIN32
     OPIT_LOG_INFO("[SECURITY] Modulo OpitSecurity inicializado com busca restrita de DLLs.");
+#else
+    OPIT_LOG_INFO("[SECURITY] Modulo OpitSecurity inicializado; o carregamento dinamico exige "
+                  "caminho absoluto e hash provado.");
+#endif
     return true;
 }
 
 bool OpitSecurityManager::VerifyInstallationIntegrity() {
     if (!m_initialized && m_appDir.empty()) {
+#ifdef _WIN32
         wchar_t exePath[MAX_PATH];
         GetModuleFileNameW(nullptr, exePath, MAX_PATH);
         std::wstring ws(exePath);
         size_t pos = ws.find_last_of(L"\\/");
         m_appDir = (pos != std::wstring::npos) ? ws.substr(0, pos) : L".";
+#else
+        // O link /proc/self/exe cumpre o papel do GetModuleFileNameW: da o caminho do executavel
+        // em execucao, sejam quais forem o CWD e o PATH com que foi lancado.
+        char exePath[PATH_MAX];
+        ssize_t exeLen = readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+        if (exeLen > 0) {
+            exePath[exeLen] = '\0';
+            std::string narrow(exePath, static_cast<size_t>(exeLen));
+            size_t pos = narrow.find_last_of('/');
+            m_appDir = (pos != std::string::npos) ? StringUtils::ToWide(narrow.substr(0, pos)) : L".";
+        } else {
+            m_appDir = L".";
+        }
+#endif
     }
 
     m_events.clear();
     m_perfMonitor.StartStartupTimer();
 
+#ifdef _WIN32
     std::wstring manifestPath = m_appDir + L"\\" + StringUtils::ToWide(secrets::manifest_file_name());
     std::wstring signaturePath = m_appDir + L"\\" + StringUtils::ToWide(secrets::manifest_sig_name());
+#else
+    std::wstring manifestPath = m_appDir + L"/" + StringUtils::ToWide(secrets::manifest_file_name());
+    std::wstring signaturePath = m_appDir + L"/" + StringUtils::ToWide(secrets::manifest_sig_name());
+#endif
 
     std::string loadErr;
     IntegrityStatus manifestStatus = m_manifestVerifier.VerifyAndLoad(manifestPath, signaturePath, m_records, loadErr);
@@ -111,11 +162,26 @@ bool OpitSecurityManager::VerifyInstallationIntegrity() {
 
 IntegrityStatus OpitSecurityManager::VerifyModuleFile(const std::wstring& relativePath, const std::string& expectedSha256) {
     if (m_appDir.empty()) {
+#ifdef _WIN32
         wchar_t exePath[MAX_PATH];
         GetModuleFileNameW(nullptr, exePath, MAX_PATH);
         std::wstring ws(exePath);
         size_t pos = ws.find_last_of(L"\\/");
         m_appDir = (pos != std::wstring::npos) ? ws.substr(0, pos) : L".";
+#else
+        // O link /proc/self/exe cumpre o papel do GetModuleFileNameW: da o caminho do executavel
+        // em execucao, sejam quais forem o CWD e o PATH com que foi lancado.
+        char exePath[PATH_MAX];
+        ssize_t exeLen = readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+        if (exeLen > 0) {
+            exePath[exeLen] = '\0';
+            std::string narrow(exePath, static_cast<size_t>(exeLen));
+            size_t pos = narrow.find_last_of('/');
+            m_appDir = (pos != std::string::npos) ? StringUtils::ToWide(narrow.substr(0, pos)) : L".";
+        } else {
+            m_appDir = L".";
+        }
+#endif
     }
 
     FileIntegrityRecord rec;
@@ -127,9 +193,15 @@ IntegrityStatus OpitSecurityManager::VerifyModuleFile(const std::wstring& relati
         if (m_records.empty()) {
             // Se o manifesto nao foi carregado, tenta carregar agora
             std::string loadErr;
+#ifdef _WIN32
             m_manifestVerifier.VerifyAndLoad(m_appDir + L"\\" + StringUtils::ToWide(secrets::manifest_file_name()),
                                              m_appDir + L"\\" + StringUtils::ToWide(secrets::manifest_sig_name()),
                                              m_records, loadErr);
+#else
+            m_manifestVerifier.VerifyAndLoad(m_appDir + L"/" + StringUtils::ToWide(secrets::manifest_file_name()),
+                                             m_appDir + L"/" + StringUtils::ToWide(secrets::manifest_sig_name()),
+                                             m_records, loadErr);
+#endif
         }
 
         for (const auto& item : m_records) {
@@ -149,15 +221,34 @@ IntegrityStatus OpitSecurityManager::VerifyModuleFile(const std::wstring& relati
     return m_integrityVerifier.VerifyFile(m_appDir, rec, true);
 }
 
+#ifdef _WIN32
 HMODULE OpitSecurityManager::LoadVerifiedModule(const std::wstring& relativePath, IntegrityStatus& outStatus) {
+#else
+void* OpitSecurityManager::LoadVerifiedModule(const std::wstring& relativePath, IntegrityStatus& outStatus) {
+#endif
     outStatus = IntegrityStatus::Missing;
 
     if (m_appDir.empty()) {
+#ifdef _WIN32
         wchar_t exePath[MAX_PATH];
         GetModuleFileNameW(nullptr, exePath, MAX_PATH);
         std::wstring ws(exePath);
         size_t pos = ws.find_last_of(L"\\/");
         m_appDir = (pos != std::wstring::npos) ? ws.substr(0, pos) : L".";
+#else
+        // O link /proc/self/exe cumpre o papel do GetModuleFileNameW: da o caminho do executavel
+        // em execucao, sejam quais forem o CWD e o PATH com que foi lancado.
+        char exePath[PATH_MAX];
+        ssize_t exeLen = readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+        if (exeLen > 0) {
+            exePath[exeLen] = '\0';
+            std::string narrow(exePath, static_cast<size_t>(exeLen));
+            size_t pos = narrow.find_last_of('/');
+            m_appDir = (pos != std::string::npos) ? StringUtils::ToWide(narrow.substr(0, pos)) : L".";
+        } else {
+            m_appDir = L".";
+        }
+#endif
     }
 
     std::string relUtf8 = StringUtils::ToUtf8(relativePath);
@@ -166,9 +257,15 @@ HMODULE OpitSecurityManager::LoadVerifiedModule(const std::wstring& relativePath
 
     if (m_records.empty()) {
         std::string loadErr;
+#ifdef _WIN32
         m_manifestVerifier.VerifyAndLoad(m_appDir + L"\\" + StringUtils::ToWide(secrets::manifest_file_name()),
                                          m_appDir + L"\\" + StringUtils::ToWide(secrets::manifest_sig_name()),
                                          m_records, loadErr);
+#else
+        m_manifestVerifier.VerifyAndLoad(m_appDir + L"/" + StringUtils::ToWide(secrets::manifest_file_name()),
+                                         m_appDir + L"/" + StringUtils::ToWide(secrets::manifest_sig_name()),
+                                         m_records, loadErr);
+#endif
     }
 
     for (const auto& item : m_records) {
@@ -203,7 +300,11 @@ HMODULE OpitSecurityManager::LoadVerifiedModule(const std::wstring& relativePath
         return nullptr;
     }
 
+#ifdef _WIN32
     HMODULE hMod = m_moduleVerifier.VerifyAndLoad(canonicalPath, expSha, outStatus);
+#else
+    void* hMod = m_moduleVerifier.VerifyAndLoad(canonicalPath, expSha, outStatus);
+#endif
     if (outStatus != IntegrityStatus::Valid) {
         SecurityEvent ev;
         ev.component = relUtf8;
@@ -245,7 +346,11 @@ bool OpitSecurityManager::AuditRuntimeShield() {
         ev.component = "AntiReverseEngineering";
         ev.description = "Depurador ativo ou registradores de hardware (DR0-DR3) detectados no processo.";
         ev.status = IntegrityStatus::Tampered;
+#ifdef _WIN32
         ev.timestampMs = GetTickCount64();
+#else
+        ev.timestampMs = NowMs();
+#endif
         m_events.push_back(ev);
         m_isSecure = false;
         m_highestCategory = SecurityCategory::CategoryC;
@@ -261,7 +366,11 @@ bool OpitSecurityManager::AuditRuntimeShield() {
         ev.component = "AntiReverseEngineering";
         ev.description = "Adulteracao de memoria na secao .text do executavel (patch de bytes/hooks/shellcode).";
         ev.status = IntegrityStatus::Tampered;
+#ifdef _WIN32
         ev.timestampMs = GetTickCount64();
+#else
+        ev.timestampMs = NowMs();
+#endif
         m_events.push_back(ev);
         m_isSecure = false;
         m_highestCategory = SecurityCategory::CategoryC;

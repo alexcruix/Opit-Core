@@ -1,7 +1,54 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "TelemetryValidator.h"
+#ifdef _WIN32
 #include <windows.h>
+#else
+// Leitura de /proc/<pid>/io; nada mais do kernel e necessario aqui.
+#include <cerrno>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#endif
 #include <chrono>
 #include <algorithm>
+
+#ifndef _WIN32
+namespace {
+
+// O equivalente de GetProcessIoCounters em Linux e /proc/<pid>/io: read_bytes e write_bytes contam
+// o tráfego que passou pela camada de bloco, que e exatamente o que ReadTransferCount e
+// WriteTransferCount do Windows medem. O ficheiro e modo 0400 do dono do processo, por isso um
+// processo de outro utilizador devolve EACCES — e nesse caso saimos com 0.0, tal como a rota de
+// Windows faz quando o OpenProcess e recusado.
+bool ReadProcessIoBytes(uint32_t pid, uint64_t* readBytes, uint64_t* writeBytes) {
+    char path[64];
+    snprintf(path, sizeof(path), "/proc/%u/io", static_cast<unsigned>(pid));
+    FILE* f = fopen(path, "re");
+    if (!f) return false;
+    char line[128];
+    uint64_t r = 0, w = 0;
+    bool haveR = false, haveW = false;
+    while (fgets(line, sizeof(line), f)) {
+        if (strncmp(line, "read_bytes:", 11) == 0) {
+            r = static_cast<uint64_t>(strtoull(line + 11, nullptr, 10));
+            haveR = true;
+        } else if (strncmp(line, "write_bytes:", 12) == 0) {
+            w = static_cast<uint64_t>(strtoull(line + 12, nullptr, 10));
+            haveW = true;
+        }
+    }
+    fclose(f);
+    if (!haveR && !haveW) return false;
+    *readBytes = r;
+    *writeBytes = w;
+    return true;
+}
+
+} // namespace
+#endif
 
 namespace opitcore {
 
@@ -15,6 +62,7 @@ uint64_t TelemetryValidator::GetCurrentTimestampMs() const {
 double TelemetryValidator::SampleProcessDiskActivity(uint32_t pid) {
     if (pid <= 4) return 0.0;
 
+#ifdef _WIN32
     HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
     if (!hProc) return 0.0;
 
@@ -37,6 +85,26 @@ double TelemetryValidator::SampleProcessDiskActivity(uint32_t pid) {
         m_lastIoTimeMs = nowMs;
     }
     CloseHandle(hProc);
+#else
+    uint64_t readBytes = 0, writeBytes = 0;
+    double diskRateMBs = 0.0;
+    if (ReadProcessIoBytes(pid, &readBytes, &writeBytes)) {
+        uint64_t nowMs = GetCurrentTimestampMs();
+        uint64_t totalBytes = readBytes + writeBytes;
+        uint64_t prevBytes = m_lastIoReadBytes + m_lastIoWriteBytes;
+
+        if (m_lastIoTimeMs > 0 && nowMs > m_lastIoTimeMs) {
+            double deltaSec = (nowMs - m_lastIoTimeMs) / 1000.0;
+            if (deltaSec > 0.05 && totalBytes >= prevBytes) {
+                double bytesSec = (totalBytes - prevBytes) / deltaSec;
+                diskRateMBs = bytesSec / (1024.0 * 1024.0);
+            }
+        }
+        m_lastIoReadBytes = readBytes;
+        m_lastIoWriteBytes = writeBytes;
+        m_lastIoTimeMs = nowMs;
+    }
+#endif
 
     // Converte taxa de I/O em percentual de saturação estimada (referência 150 MB/s para saturação de disco de boot convencional)
     double diskPercent = (diskRateMBs / 150.0) * 100.0;

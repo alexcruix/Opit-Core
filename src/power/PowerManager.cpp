@@ -1,4 +1,8 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "PowerManager.h"
+#ifdef _WIN32
 #include "utils/StringUtils.h"
 #include "platform/windows/ElevationHelper.h"
 #include <windows.h>
@@ -640,3 +644,4 @@ void PowerManager::RestoreOriginalSettings() {
 }
 
 } // namespace opitcore
+#endif // _WIN32 (caminho PowrProf/powercfg; o gemelo Linux esta em PowerManagerLinux.cpp)

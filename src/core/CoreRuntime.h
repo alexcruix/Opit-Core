@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #pragma once
 #include "IModule.h"
 #include "utils/Types.h"
@@ -38,8 +41,9 @@ public:
     GameDetector& GetGameDetector() { return m_gameDetector; }
     ThermalProtection& GetThermalProtection() { return m_thermalProtection; }
 
-    // Janela topo-nivel para medicao real de tempo por quadro (DWM) dentro do SystemMonitor
-    void SetFrameTimingWindow(HWND hwnd) { m_systemMonitor.SetFrameTimingWindow(hwnd); }
+    // Janela topo-nivel para medicao real de tempo por quadro (DWM) dentro do SystemMonitor.
+    // NativeWindow e HWND no Windows e um opaco nos outros sistemas, onde o DWM nao existe.
+    void SetFrameTimingWindow(NativeWindow hwnd) { m_systemMonitor.SetFrameTimingWindow(hwnd); }
 
 private:
     void WorkerLoop();

@@ -1,13 +1,109 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "AppProfileManager.h"
 #include "utils/StringUtils.h"
 #include "core/Logger.h"
+#ifdef _WIN32
 #include <windows.h>
 #include <psapi.h>
+#endif
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#ifndef _WIN32
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <dlfcn.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 namespace opitcore {
+
+#ifndef _WIN32
+namespace {
+
+// X11 nao e ligado em tempo de build: o libX11.so.6 e carregado em tempo de execucao, do mesmo
+// modo que o programa carrega NVAPI e DWM no Windows. Numa sessao sem X (Wayland puro, consola
+// virtual, servidor sem ecras) o programa continua a correr e declara a janela frontal como
+// indisponivel, em vez de deixar faltar um simbolo no executavel.
+typedef unsigned long XWindowId;
+typedef unsigned long XAtomId;
+
+struct X11Functions {
+    void* (*OpenDisplay)(const char*) = nullptr;
+    int (*CloseDisplay)(void*) = nullptr;
+    XAtomId (*InternAtom)(void*, const char*, int) = nullptr;
+    int (*GetInputFocus)(void*, XWindowId*, int*) = nullptr;
+    int (*GetWindowProperty)(void*, XWindowId, XAtomId, long, long, int, XAtomId, XAtomId*, int*,
+                             unsigned long*, unsigned long*, unsigned char**) = nullptr;
+    int (*Free)(void*) = nullptr;
+    bool loaded = false;
+};
+
+const X11Functions& X11() {
+    static X11Functions f;
+    static bool attempted = false;
+    if (attempted) return f;
+    attempted = true;
+    void* h = dlopen("libX11.so.6", RTLD_NOW | RTLD_LOCAL);
+    if (!h) h = dlopen("libX11.so", RTLD_NOW | RTLD_LOCAL);
+    if (!h) return f;
+    f.OpenDisplay = reinterpret_cast<decltype(f.OpenDisplay)>(dlsym(h, "XOpenDisplay"));
+    f.CloseDisplay = reinterpret_cast<decltype(f.CloseDisplay)>(dlsym(h, "XCloseDisplay"));
+    f.InternAtom = reinterpret_cast<decltype(f.InternAtom)>(dlsym(h, "XInternAtom"));
+    f.GetInputFocus = reinterpret_cast<decltype(f.GetInputFocus)>(dlsym(h, "XGetInputFocus"));
+    f.GetWindowProperty =
+        reinterpret_cast<decltype(f.GetWindowProperty)>(dlsym(h, "XGetWindowProperty"));
+    f.Free = reinterpret_cast<decltype(f.Free)>(dlsym(h, "XFree"));
+    f.loaded = f.OpenDisplay && f.CloseDisplay && f.InternAtom && f.GetInputFocus &&
+               f.GetWindowProperty && f.Free;
+    return f;
+}
+
+void WarnOnceNoForeground(const std::string& why) {
+    static bool warned = false;
+    if (warned) return;
+    warned = true;
+    OPIT_LOG_WARN("Janela frontal indisponivel em Linux: " + why +
+                  ". O motor adaptativo fica com a enumeracao de processos.");
+}
+
+// Le um property de janela. `asText` pede bytes (nomes de janela); sem ele pede um CARDINAL de
+// 32 bits. Property ausente ou de outro formato devolve false — nada e inventado nesse caso.
+bool ReadXProperty(void* dpy, XWindowId win, XAtomId atom, bool asText, std::string* text,
+                   unsigned long* number) {
+    const X11Functions& x = X11();
+    XAtomId actualType = 0;
+    int format = 0;
+    unsigned long nitems = 0, bytesAfter = 0;
+    unsigned char* data = nullptr;
+    const long chunk = asText ? 256L : 1L;
+    // AnyPropertyType = 0, Bool delete = 0: queremos o tipo real, nao um tipo imposto.
+    if (x.GetWindowProperty(dpy, win, atom, 0L, chunk, 0, 0L, &actualType, &format, &nitems,
+                            &bytesAfter, &data) != 0 || data == nullptr) {
+        return false;
+    }
+    bool ok = false;
+    if (actualType != 0) {
+        if (asText && format == 8 && nitems > 0) {
+            text->assign(reinterpret_cast<char*>(data), nitems);
+            ok = !text->empty();
+        } else if (!asText && format == 32 && nitems >= 1) {
+            // A Xlib devolve os itens de formato 32 como `long`, nao como `int32_t`.
+            *number = static_cast<unsigned long>(reinterpret_cast<long*>(data)[0]);
+            ok = true;
+        }
+    }
+    x.Free(data);
+    return ok;
+}
+
+} // namespace
+#endif
 
 AppProfileManager& AppProfileManager::Instance() {
     static AppProfileManager instance;
@@ -51,6 +147,7 @@ AppIdentity AppProfileManager::IdentifyProcess(uint32_t pid) {
     id.pid = pid;
     if (pid <= 4) return id;
 
+#ifdef _WIN32
     HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
     if (!hProc) return id;
 
@@ -87,9 +184,44 @@ AppIdentity AppProfileManager::IdentifyProcess(uint32_t pid) {
     }
     CloseHandle(hProc);
     return id;
+#else
+    // O link /proc/<pid>/exe cumpre o mesmo papel do QueryFullProcessImageNameW. Se o processo
+    // ja morreu ou pertence a outro utilizador, o link nao abre e a identidade sai vazia — o
+    // mesmo resultado de um OpenProcess recusado no Windows, sem inventar caminho nenhum.
+    char link[64];
+    snprintf(link, sizeof(link), "/proc/%u/exe", static_cast<unsigned>(pid));
+    char pathBuf[4096];
+    ssize_t n = readlink(link, pathBuf, sizeof(pathBuf) - 1);
+    if (n <= 0) return id;
+    pathBuf[n] = '\0';
+    std::string path(pathBuf);
+    id.normalizedPath = path;
+
+    size_t lastSlash = id.normalizedPath.find_last_of('/');
+    if (lastSlash != std::string::npos) {
+        id.processName = id.normalizedPath.substr(lastSlash + 1);
+    } else {
+        id.processName = id.normalizedPath;
+    }
+
+    // Metadados do arquivo
+    struct stat st{};
+    if (stat(path.c_str(), &st) == 0) {
+        id.fileSizeBytes = static_cast<uint64_t>(st.st_size);
+        // O Windows conta 100 ns desde 1601; aqui contamos ns desde a epoch. O que o appId
+        // precisa e de um numero estavel para o MESMO ficheiro na mesma maquina, nao de uma
+        // escala comparavel entre sistemas operativos.
+        id.lastWriteTime = static_cast<uint64_t>(st.st_mtim.tv_sec) * 1000000000ULL +
+                           static_cast<uint64_t>(st.st_mtim.tv_nsec);
+        id.fileHash = ComputeFileIdentityHash(StringUtils::ToWide(path), id.fileSizeBytes,
+                                             id.lastWriteTime);
+    }
+    return id;
+#endif
 }
 
 AppIdentity AppProfileManager::IdentifyForegroundWindow() {
+#ifdef _WIN32
     HWND hwnd = GetForegroundWindow();
     if (!hwnd) return AppIdentity{};
 
@@ -104,6 +236,40 @@ AppIdentity AppProfileManager::IdentifyForegroundWindow() {
         id.windowTitle = StringUtils::ToUtf8(titleBuf);
     }
     return id;
+#else
+    const X11Functions& x = X11();
+    if (!x.loaded) {
+        WarnOnceNoForeground(std::string("libX11 nao encontrado (") + (dlerror() ? dlerror() : "sem libX11") + ")");
+        return AppIdentity{};
+    }
+    void* dpy = x.OpenDisplay(nullptr); // segue o $DISPLAY, como qualquer cliente X
+    if (!dpy) {
+        WarnOnceNoForeground("sem servidor X acessivel pelo DISPLAY");
+        return AppIdentity{};
+    }
+    AppIdentity id;
+    XWindowId focus = 0;
+    int revertTo = 0;
+    // PointerRoot (todos os bits 1) e None (0) significam que nao ha janela com o foco do
+    // teclado: e o caso de uma area de trabalho sem janelas, e devolvemos identidade vazia.
+    if (x.GetInputFocus(dpy, &focus, &revertTo) == 0 && focus != 0 && focus != ~0UL) {
+        XAtomId pidAtom = x.InternAtom(dpy, "_NET_WM_PID", 0);
+        unsigned long pid = 0;
+        if (pidAtom != 0 && ReadXProperty(dpy, focus, pidAtom, false, nullptr, &pid) && pid > 4) {
+            id = IdentifyProcess(static_cast<uint32_t>(pid));
+            XAtomId netName = x.InternAtom(dpy, "_NET_WM_NAME", 0);
+            std::string title;
+            if (netName == 0 || !ReadXProperty(dpy, focus, netName, true, &title, nullptr)) {
+                XAtomId wmName = x.InternAtom(dpy, "WM_NAME", 0);
+                title.clear();
+                if (wmName != 0) ReadXProperty(dpy, focus, wmName, true, &title, nullptr);
+            }
+            if (!title.empty()) id.windowTitle = title;
+        }
+    }
+    x.CloseDisplay(dpy);
+    return id;
+#endif
 }
 
 AppProfile AppProfileManager::GetOrCreateProfile(const AppIdentity& app) {

@@ -1,11 +1,18 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "FanControlManager.h"
+#ifdef _WIN32
 #include "WindowsAcpiFanProvider.h"
 #include "NvidiaNvapiFanProvider.h"
 #include "AmdAdlFanProvider.h"
 #include "IntelGpuFanProvider.h"
 #include "LaptopFanProvider.h"
-#include "MockFanProvider.h"
 #include "LibreHardwareMonitorFanProvider.h"
+#else
+#include "HwmonFanProvider.h"
+#endif
+#include "MockFanProvider.h"
 #include "core/DatabaseManager.h"
 #include "core/Logger.h"
 #include "core/ModuleAdvancedSettings.h"
@@ -35,12 +42,18 @@ bool FanControlManager::Initialize(bool enableMockForTesting) {
     m_safety.SetThermalThresholds(thCfg.criticalLimitC, thCfg.alertLimitC);
 
     // Registro de Adaptadores de Hardware
+#ifdef _WIN32
     m_discovery.RegisterProvider(std::make_shared<WindowsAcpiFanProvider>());
     m_discovery.RegisterProvider(std::make_shared<NvidiaNvapiFanProvider>());
     m_discovery.RegisterProvider(std::make_shared<AmdAdlFanProvider>());
     m_discovery.RegisterProvider(std::make_shared<IntelGpuFanProvider>());
     m_discovery.RegisterProvider(std::make_shared<LaptopFanProvider>());
     m_discovery.RegisterProvider(std::make_shared<LibreHardwareMonitorFanProvider>());
+#else
+    // O kernel expõe por sysfs os mesmos sensores e o mesmo comando de duty que a ACPI/NVAPI/ADL
+    // dão no Windows: um provider chega para todos os chips com driver hwmon.
+    m_discovery.RegisterProvider(std::make_shared<HwmonFanProvider>());
+#endif
 
     if (enableMockForTesting) {
         m_discovery.RegisterProvider(std::make_shared<MockFanProvider>());

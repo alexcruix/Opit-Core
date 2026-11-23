@@ -1,19 +1,34 @@
+// SPDX-License-Identifier: PolyForm-Shield-1.0.0
+// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+
 #include "SystemMonitor.h"
 #include "core/Logger.h"
+#ifdef _WIN32
 #include <windows.h>
 #include <dwmapi.h>
 #include <wbemidl.h>
 #include <comdef.h>
+#endif
 #include <sstream>
 #include <string>
 
+#ifdef _WIN32
 #pragma comment(lib, "wbemuuid.lib")
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "oleaut32.lib")
 #pragma comment(lib, "dwmapi.lib")
+#endif
+
+#ifndef _WIN32
+#include <cstdlib>
+#include <cstring>
+#include <dirent.h>
+#include <fstream>
+#endif
 
 namespace opitcore {
 
+#ifdef _WIN32
 namespace {
 // DwmGetCompositionTimingInfo so e exportada pelo dwmapi a partir do Windows 8. Importa-la
 // duro faria o Windows 7 recusar o executavel inteiro ("entry point not found") por causa de
@@ -28,6 +43,7 @@ HRESULT QueryCompositionTiming(HWND wnd, DWM_TIMING_INFO* ti) {
     return fn(wnd, ti);
 }
 } // namespace
+#endif
 
 SystemMonitor::SystemMonitor() = default;
 
@@ -44,6 +60,7 @@ double SystemMonitor::QueryAcpiTemperature(bool& outHasSensor) {
     if (m_acpiUnsupported) {
         return 0.0;
     }
+#ifdef _WIN32
     double tempC = 0.0;
 
     // Inicializar COM para a chamada local segura se ainda não estiver inicializado na thread
@@ -106,9 +123,66 @@ double SystemMonitor::QueryAcpiTemperature(bool& outHasSensor) {
     }
 
     return tempC;
+#else
+    // Gemelo do MSAcpi_ThermalZoneTemperature: os sensores hwmon que o kernel expoe em
+    // sysfs (coretemp, k10temp, zenpower, cpu_thermal, acpitz). O valor ja esta em graus
+    // por 1000, nao em decimos de Kelvin. A raiz e configuravel por OPITCORE_HWMON_ROOT
+    // para se poder exercitar a leitura com uma arvore falsa na maquina que nao mostra
+    // hwmon nenhum (e o caso do WSL2, onde este ramo devolve sensor indisponivel).
+    const char* rootEnv = std::getenv("OPITCORE_HWMON_ROOT");
+    const std::string root = (rootEnv && *rootEnv) ? std::string(rootEnv) : std::string("/sys/class/hwmon");
+    DIR* dir = opendir(root.c_str());
+    if (!dir) {
+        m_acpiUnsupported = true;
+        return 0.0;
+    }
+
+    double bestC = 0.0;
+    std::string bestLabel;
+    for (const dirent* entry = readdir(dir); entry; entry = readdir(dir)) {
+        if (std::strncmp(entry->d_name, "hwmon", 5) != 0) {
+            continue;
+        }
+        const std::string dev = root + "/" + entry->d_name;
+        std::string name;
+        {
+            std::ifstream nameFile(dev + "/name");
+            std::getline(nameFile, name);
+        }
+        if (name != "coretemp" && name != "k10temp" && name != "zenpower" &&
+            name != "cpu_thermal" && name != "acpitz") {
+            continue;
+        }
+        for (int canal = 1; canal <= 16; ++canal) {
+            std::ifstream tempFile(dev + "/temp" + std::to_string(canal) + "_input");
+            long long milliC = 0;
+            if (!(tempFile >> milliC) || milliC <= 0) {
+                continue;
+            }
+            const double t = static_cast<double>(milliC) / 1000.0;
+            // mesma faixa de plausibilidade do ramo Windows: fora dela o sensor nao e confiavel
+            if (t >= 130.0) {
+                continue;
+            }
+            if (t > bestC) {
+                bestC = t;
+                bestLabel = "sysfs hwmon " + name + " (" + entry->d_name + " temp" + std::to_string(canal) + ")";
+            }
+        }
+    }
+    closedir(dir);
+
+    if (bestC <= 0.0) {
+        m_acpiUnsupported = true;
+        return 0.0;
+    }
+    outHasSensor = true;
+    m_tempSensorLabel = bestLabel;
+    return bestC;
+#endif
 }
 
-void SystemMonitor::SetFrameTimingWindow(HWND hwnd) {
+void SystemMonitor::SetFrameTimingWindow(NativeWindow hwnd) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_frameWnd = hwnd;
 }
@@ -122,6 +196,7 @@ SystemMetricsSnapshot SystemMonitor::Sample() {
     snap.cpuUsagePercent = cm.totalUsagePercent;
 
     // RAM Status
+#ifdef _WIN32
     MEMORYSTATUSEX ms{};
     ms.dwLength = sizeof(ms);
     if (GlobalMemoryStatusEx(&ms)) {
@@ -129,6 +204,34 @@ SystemMetricsSnapshot SystemMonitor::Sample() {
         snap.ramTotalMB = ms.ullTotalPhys / (1024 * 1024);
         snap.ramUsedMB = (ms.ullTotalPhys - ms.ullAvailPhys) / (1024 * 1024);
     }
+#else
+    // Gemelo do GlobalMemoryStatusEx: MemTotal e MemAvailable do /proc/meminfo, ambos em kB.
+    // MemAvailable (nao MemFree) e o que o kernel da a uma aplicacao sem paging, por isso e
+    // o paralelo correto do ullAvailPhys; a percentagem usa os mesmos dois numeros, tal como
+    // o dwMemoryLoad do Windows e uma fracao de uso.
+    {
+        std::ifstream mf("/proc/meminfo");
+        std::string line;
+        uint64_t totalKb = 0;
+        uint64_t availKb = 0;
+        while (std::getline(mf, line)) {
+            if (line.rfind("MemTotal:", 0) == 0) {
+                totalKb = std::strtoull(line.c_str() + 9, nullptr, 10);
+            } else if (line.rfind("MemAvailable:", 0) == 0) {
+                availKb = std::strtoull(line.c_str() + 13, nullptr, 10);
+            }
+            if (totalKb != 0 && availKb != 0) {
+                break;
+            }
+        }
+        if (totalKb != 0) {
+            const uint64_t usedKb = (availKb <= totalKb) ? (totalKb - availKb) : 0;
+            snap.ramTotalMB = totalKb / 1024ULL;
+            snap.ramUsedMB = usedKb / 1024ULL;
+            snap.ramUsagePercent = 100.0 * static_cast<double>(usedKb) / static_cast<double>(totalKb);
+        }
+    }
+#endif
 
     // Thermal Temperature
     bool hasSensor = false;
@@ -136,9 +239,14 @@ SystemMetricsSnapshot SystemMonitor::Sample() {
     snap.hasTempSensor = hasSensor;
     if (hasSensor) {
         // A origem e declarada por quem realmente consultou o sensor, nao por suposicao a posteriori
+#ifdef _WIN32
         snap.tempSensorSource = "WMI root\\wmi MSAcpi_ThermalZoneTemperature";
+#else
+        snap.tempSensorSource = m_tempSensorLabel;
+#endif
     }
 
+#ifdef _WIN32
     // Tempo real por quadro via estatisticas do compositor DWM (cFramesDisplayed: quadros
     // unicos efetivamente exibidos). So com janela registrada e com novos quadros desde a
     // amostra anterior; caso contrario, indisponivel. Diagnostico one-shot distingue
@@ -181,6 +289,7 @@ SystemMetricsSnapshot SystemMonitor::Sample() {
                           " — metrica de quadro indisponivel neste build.");
         }
     }
+#endif
 
     return snap;
 }

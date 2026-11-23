@@ -15,5 +15,17 @@ target_link_libraries(opitcore_ai
     opitcore_core
     opitcore_metrics
     opitcore_utils
-    winhttp
 )
+
+if(WIN32)
+  target_link_libraries(opitcore_ai PUBLIC winhttp)
+else()
+  # Em Linux o transporte (libcurl) e o AES-GCM (libcrypto) entram por dlopen, nao por link:
+  # nada e instalado e, sem a biblioteca, o codigo falha fechado. So precisa do -ldl, e este
+  # teste e obrigatorio porque em glibc >= 2.34 o dlopen ja vive na libc e ligar -dl a cego
+  # partia a ligacao em qualquer imagem sem libdl.so.2.
+  find_library(OPIT_LIB_DL NAMES dl)
+  if(OPIT_LIB_DL)
+    target_link_libraries(opitcore_ai PUBLIC ${OPIT_LIB_DL})
+  endif()
+endif()
