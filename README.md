@@ -287,9 +287,15 @@ Opit-Core/
 ├── .gitignore              # Regras de exclusão de artefatos de build e chaves locais
 ├── CMakeLists.txt          # Configuração principal de build (CMake 3.16+)
 ├── CONTRIBUTING.md         # Regras de contribuição e Acordo de Licença de Contribuidor (CLA)
+├── COPYRIGHT.md            # Declaração de autoria, titularidade e cadeia de direitos
+├── IP_POLICY.md            # Política de propriedade intelectual e isenção de garantia
 ├── LICENSE                 # Texto integral da PolyForm Shield License 1.0.0
 ├── NOTICE                  # Avisos obrigatórios (Required Notice e Licensor Line of Business)
-├── TRADEMARK_AND_RIGHTS.md # Resumo da licença, política de marcas e isenção de responsabilidade
+├── SECURITY.md             # Política de segurança e verificação de integridade
+├── SHA256SUMS.txt          # Hashes SHA-256 oficiais dos pacotes de lançamento
+├── THIRD_PARTY_NOTICES.md  # Licenças e avisos de componentes de terceiros
+├── TRADEMARKS.md           # Política de marcas da família OPIT e ACSTC Lab
+├── VERSION_HISTORY.md      # Histórico oficial de versões e hashes
 └── README.md               # Este documento
 ```
 
@@ -298,27 +304,27 @@ Opit-Core/
 ## ⚖️ Licença, Marcas e Direitos
 
 ```text
-Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+Required Notice: Copyright (C) 2026 ACSTC Lab — Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
 Required Notice: Licensed under PolyForm Shield License 1.0.0 (https://polyformproject.org/licenses/shield/1.0.0)
-Licensor Line of Business: Opit-Core and the Opit-* software ecosystem (Opit-Graphics, Opit-Graphic, Opit-Grafic, Opit-Sound, adaptive hardware, performance, power, thermal, fan, process and service orchestration and optimization tools for Windows, Linux/Ubuntu, macOS and other operating systems) — ACSTCLab (alexcstos@gmail.com)
+Required Notice: Official repository https://github.com/alexcruix/Opit-Core
+Licensor Line of Business: OPIT software family — Opit-Core, Opit-AIEngine, Opit-Graphics, Opit-Graphic, Opit-Grafic, Opit-Sound (adaptive hardware, performance, power, thermal, fan, process and service orchestration and optimization tools for Windows, Linux/Ubuntu, macOS and other operating systems) — ACSTC Lab (alexcstos@gmail.com)
 ```
 
 ### Resumo prático da PolyForm Shield License 1.0.0
 
-| ✅ O que você PODE fazer gratuitamente | 🚫 O que é PROIBIDO a terceiros (Exclusivo da ACSTCLab) |
+| ✅ O que você PODE fazer gratuitamente | 🚫 O que é PROIBIDO a terceiros (Exclusivo da ACSTC Lab) |
 | :--- | :--- |
 | ✔️ **Usar gratuitamente** em computadores pessoais ou dentro de empresas (uso interno). | ❌ **Proibido vender ou oferecer produto concorrente** (pago ou gratuito) usando este código ou derivados (*Noncompete*). |
 | ✔️ **Estudar e auditar** todo o código-fonte (confirmando zero telemetria). | ❌ **Proibido lançar versões concorrentes** em outra linguagem, interface ou sistema operacional (Windows, Linux/Ubuntu, macOS). |
-| ✔️ **Modificar o código** para uso próprio ou interno, sem concorrer com o Opit-Core. | ❌ **Proibido usar as marcas** `"Opit-Core"`, `"ACSTCLab"`, `"Opit-Graphics"` / `"Opit-Grafic"`, `"Opit-Sound"` ou os logotipos oficiais. |
+| ✔️ **Modificar o código** para uso próprio ou interno, sem concorrer com o Opit-Core. | ❌ **Proibido usar as marcas** `"OPIT"`, `"Opit-Core"`, `"Opit-AIEngine"`, `"Opit-Graphics"` / `"Opit-Grafic"`, `"Opit-Sound"`, `"ACSTC Lab"` ou os logotipos oficiais. |
 | ✔️ **Compartilhar** preservando a licença e os avisos do arquivo [`NOTICE`](NOTICE). | ❌ **Proibido exigir garantias, suporte ou responsabilização** por danos de hardware, tela azul ou perda de dados (*No Liability*). |
 
 > [!IMPORTANT]
-> **Exclusividade Comercial da ACSTCLab:** Somente a **ACSTCLab** tem direito de comercializar o Opit-Core, lançar versões pagas/por assinatura ou conceder licenças comerciais separadas. Consulte [`LICENSE`](LICENSE), [`NOTICE`](NOTICE) e [`TRADEMARK_AND_RIGHTS.md`](TRADEMARK_AND_RIGHTS.md) para os termos completos.
->
-> *(Nota histórica: a versão `v8.1.2` publicada anteriormente sob a GPL-3.0 continua sob a GPL-3.0 para quem a baixou naquela versão; todas as alterações e versões seguintes no repositório são regidas exclusivamente pela **PolyForm Shield 1.0.0**.)*
+> **Exclusividade Comercial da ACSTC Lab:** Somente a **ACSTC Lab** tem direito de comercializar o Opit-Core, lançar versões pagas/por assinatura ou conceder licenças comerciais separadas.
+> Consulte a documentação completa de governança: [`LICENSE`](LICENSE) • [`NOTICE`](NOTICE) • [`COPYRIGHT.md`](COPYRIGHT.md) • [`TRADEMARKS.md`](TRADEMARKS.md) • [`IP_POLICY.md`](IP_POLICY.md) • [`SECURITY.md`](SECURITY.md) • [`VERSION_HISTORY.md`](VERSION_HISTORY.md).
 
 > [!NOTE]
-> **Licenças de terceiros:** o repositório inclui `nlohmann/json` (**MIT**) e `SQLite3` (**domínio público**). A ponte opcional `LhmBridge` usa a `LibreHardwareMonitorLib` (**MPL-2.0**) em tempo de execução. Veja [`docs/THIRD_PARTY_LICENSES.txt`](docs/THIRD_PARTY_LICENSES.txt).
+> **Licenças de terceiros:** o repositório inclui `nlohmann/json` (**MIT**) e `SQLite3` (**domínio público**). A ponte opcional `LhmBridge` usa a `LibreHardwareMonitorLib` (**MPL-2.0**) em tempo de execução. Veja [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ---
 
