@@ -177,7 +177,7 @@ if ($records.Count -eq 0) {
 
 $manifestObj = [ordered]@{
     product    = "Opit-Core"
-    version    = "8.1.0"
+    version    = "8.2.0"
     minVersion = "8.0.0"
     algorithm  = "SHA-256"
     issuedAt   = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")

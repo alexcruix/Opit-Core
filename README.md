@@ -30,9 +30,9 @@
 
 ### Passo a Passo Rápido (Versão Pronta em Releases)
 1. Acesse a aba **[Releases](../../releases)** aqui no repositório do GitHub.
-2. Em **Assets** (no final da página da versão `v8.1.2`), baixe o pacote correspondente ao seu sistema:
-   - **`Opit-Core-8.1.2-x64.zip`** *(Windows de 64 bits — Recomendado)*
-   - **`Opit-Core-8.1.2-x86.zip`** *(Windows de 32 bits)*
+2. Em **Assets** (no final da página da versão `v8.2.0`), baixe o pacote correspondente ao seu sistema:
+   - **`Opit-Core-8.2.0-x64.zip`** *(Windows de 64 bits — Recomendado)*
+   - **`Opit-Core-8.2.0-x86.zip`** *(Windows de 32 bits)*
 3. **Extraia (descompacte) TODOS os arquivos do `.zip` juntos na mesma pasta** (ex.: `C:\Opit-Core\`). **Não tire o `Opit-Core.exe` de dentro da pasta sozinho**, pois ele precisa das DLLs que estão ao lado dele.
 4. Clique com o botão direito em **`Opit-Core.exe`** e selecione **"Executar como Administrador"** *(necessário para ajustar planos de energia ACPI e serviços do Windows)*.
    - *Aviso do Windows SmartScreen:* Como o software é gratuito e independente, o Windows pode exibir a tela azul *"O Windows protegeu o seu computador"*. Clique em **"Mais informações"** e depois em **"Executar assim mesmo"**.

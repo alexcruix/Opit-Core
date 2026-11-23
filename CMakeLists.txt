@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(OpitCore VERSION 8.1.2 LANGUAGES C CXX)
+project(OpitCore VERSION 8.2.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,6 +8,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(OPITCORE_BUILD_TESTS "Build tests" ON)
 option(OPITCORE_BUILD_UI "Build UI" ON)
+
+# Nome do alvo de plataforma. O gemelo Windows e o historico; o de Linux declara-se em
+# src/platform/linux e cresce modulo a modulo. Em sistemas sem gemelo a lista de enlace
+# fica sem ele, e o linker aponta um a um as funcoes de plataforma em falta.
+if(WIN32)
+  set(OPITCORE_PLATFORM_LIB opitcore_platform_windows)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(OPITCORE_PLATFORM_LIB opitcore_platform_linux)
+else()
+  set(OPITCORE_PLATFORM_LIB "")
+endif()
 
 # Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Release")
