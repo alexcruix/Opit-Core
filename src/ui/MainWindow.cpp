@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: PolyForm-Shield-1.0.0
-// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+// SPDX-License-Identifier: LicenseRef-PolyForm-Strict-1.0.0
+// Copyright (C) 2026 ACSTC Lab - Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
 
 #include "MainWindow.h"
 #include "UnifiedSettingsWindow.h"
@@ -1450,10 +1450,10 @@ void MainWindow::CreateTabControls(HWND hwnd) {
             { L"Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com). Começou como um jeito de domar a velocidade", false },
             { L"do processador e virou um gerenciador completo de CPU, GPU, ventoinhas, memória, serviços e energia.", false },
             { L"", false },
-            { L"LICENÇA (POLYFORM SHIELD 1.0.0)", true },
-            { L"O Opit-Core é donationware com código-fonte disponível sob a PolyForm Shield License 1.0.0.", false },
-            { L"Qualquer pessoa ou empresa pode usar, estudar e modificar gratuitamente para uso próprio/interno.", false },
-            { L"É proibido a terceiros vender ou oferecer produto concorrente. Software fornecido SEM GARANTIA.", false },
+            { L"LICENÇA (POLYFORM STRICT 1.0.0)", true },
+            { L"O Opit-Core é donationware com código-fonte disponível sob a PolyForm Strict License 1.0.0.", false },
+            { L"Uso gratuito apenas para fins pessoais e não comerciais (ou instituições sem fins lucrativos).", false },
+            { L"Proibido uso comercial, redistribuição ou derivados sem autorização. Software SEM GARANTIA.", false },
             { L"", false },
             { L"COMO USAR, SEM PEGADINHA", true },
             { L"Sem ativação, sem chave, sem cadastro, sem servidor: instalar e usar. Funciona 100% offline.", false },

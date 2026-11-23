@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: PolyForm-Shield-1.0.0
-// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+// SPDX-License-Identifier: LicenseRef-PolyForm-Strict-1.0.0
+// Copyright (C) 2026 ACSTC Lab - Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
 
 // Todo este ficheiro e o caminho Windows: NVAPI, ADL/ADLX e IGCL so existem como
 // bibliotecas do Windows, carregadas por LoadLibraryW. O gemelo do Linux, com NVML e

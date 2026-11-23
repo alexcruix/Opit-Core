@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: PolyForm-Shield-1.0.0
-// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+// SPDX-License-Identifier: LicenseRef-PolyForm-Strict-1.0.0
+// Copyright (C) 2026 ACSTC Lab - Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
 
 // Teste do reconciliador de servicos: as provas de retorno, a matriz de niveis e as travas.
 // Nada aqui pausa um servico real: o que o teste prova e a DECISAO (e as recusas de nomes criticos),

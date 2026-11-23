@@ -7,7 +7,7 @@
 
 ## 1. Separação entre Licença de Código e Direito de Marcas
 
-A licença **[PolyForm Shield License 1.0.0](LICENSE)** regula exclusivamente o uso do código-fonte (Seção *No Other Rights*). Ela **não concede autorização automática** para uso de marcas, nomes comerciais, identidade visual, logotipos ou domínios da **ACSTC Lab**.
+A licença **[PolyForm Strict License 1.0.0](LICENSE)** regula exclusivamente o uso pessoal e não comercial do software (Seção *No Other Rights*). Ela **não concede autorização automática** para uso de marcas, nomes comerciais, identidade visual, logotipos ou domínios da **ACSTC Lab**.
 
 ## 2. Identidade e Família de Marcas OPIT
 

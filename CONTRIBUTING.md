@@ -10,13 +10,13 @@ Obrigada pelo interesse! Antes de abrir um *Pull Request*, leia as duas seções
 
 ## 2. Acordo de Licença de Contribuidor (CLA)
 
-O Opit-Core é distribuído sob a **PolyForm Shield License 1.0.0** (*source-available*), e a **ACSTCLab** detém o direito exclusivo de comercialização e licenciamento comercial do projeto. Por isso, **toda contribuição externa precisa do aceite expresso deste acordo**.
+O Opit-Core é distribuído sob a **PolyForm Strict License 1.0.0** (*source-available*), e a **ACSTC Lab** detém o direito exclusivo de comercialização, distribuição e licenciamento comercial do projeto. Por isso, **toda contribuição externa precisa do aceite expresso deste acordo**.
 
 Ao enviar uma contribuição e declarar o aceite, você afirma que:
 
 1. A contribuição é obra sua, ou você tem o direito de enviá-la, e ela não viola direitos de terceiros.
 2. Você mantém os seus direitos autorais sobre a contribuição.
-3. Você concede à **ACSTCLab** uma licença **perpétua, mundial, não exclusiva, gratuita e irrevogável** para usar, reproduzir, modificar, distribuir, sublicenciar e **relicenciar a contribuição sob quaisquer termos**, inclusive sob a PolyForm Shield 1.0.0 ou sob licenças comerciais/proprietárias exclusivas da ACSTCLab.
+3. Você concede à **ACSTC Lab** uma licença **perpétua, mundial, não exclusiva, gratuita e irrevogável** para usar, reproduzir, modificar, distribuir, sublicenciar e **relicenciar a contribuição sob quaisquer termos**, inclusive sob a PolyForm Strict 1.0.0 ou sob licenças comerciais/proprietárias exclusivas da ACSTC Lab.
 4. Você concede também uma licença de patentes perpétua, mundial e livre de royalties sobre quaisquer reivindicações de patente necessariamente infringidas pela sua contribuição.
 
 **Como aceitar:** no seu Pull Request, escreva o comentário abaixo, exatamente assim:

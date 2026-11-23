@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: PolyForm-Shield-1.0.0
-// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+// SPDX-License-Identifier: LicenseRef-PolyForm-Strict-1.0.0
+// Copyright (C) 2026 ACSTC Lab - Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
 
 // Gemelo Linux do ProcessManager. O contrato e o mesmo cabecalo partilhado
 // (platform/windows/ProcessManager.h), incluido pelo caminho a partir de src: em Linux nao ha

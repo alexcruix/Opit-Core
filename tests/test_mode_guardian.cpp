@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: PolyForm-Shield-1.0.0
-// Required Notice: Copyright (C) 2026 ACSTCLab (alexcstos@gmail.com)
+// SPDX-License-Identifier: LicenseRef-PolyForm-Strict-1.0.0
+// Copyright (C) 2026 ACSTC Lab - Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
 
 // Prova do guardiao de integridade de modo: o modo declarado pela usuaria tem que sobreviver a qualquer
 // agente que mexa no sistema depois dela. Cada check mede o powrprof de volta; nenhum check mede adjetivo.

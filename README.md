@@ -6,16 +6,16 @@
 
 ### Motor Adaptativo de Hardware, Desempenho, Energia e Governança Térmica para Windows
 
-[![License: PolyForm Shield 1.0.0](https://img.shields.io/badge/License-PolyForm%20Shield%201.0.0-blue.svg?style=for-the-badge)](LICENSE)
+[![License: PolyForm Strict 1.0.0](https://img.shields.io/badge/License-PolyForm%20Strict%201.0.0-blue.svg?style=for-the-badge)](LICENSE)
 [![Language: C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)](CMakeLists.txt)
 [![Platform: Windows 10/11](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64%20%2F%20x86)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](#requisitos-e-compatibilidade)
 [![Tests: 23 Suites](https://img.shields.io/badge/CTest-23%20Su%C3%ADtes%20Verificadas-2ea44f?style=for-the-badge)](#suíte-de-testes-e-verificação)
 [![Telemetry: Zero](https://img.shields.io/badge/Telemetria-ZERO%20(100%25%20Offline)-critical?style=for-the-badge)](#privacidade-e-segurança-defensiva)
 
-**Código-fonte disponível (*Source-Available*) sob `PolyForm Shield 1.0.0` • Gratuito para uso • Sem ativação • Sem telemetria • Instalou, usou.**
+**Código-fonte disponível (*Source-Available*) sob `PolyForm Strict 1.0.0` • Uso pessoal não comercial gratuito • Sem ativação • Sem telemetria.**
 
 [Como Baixar e Usar](#-como-baixar-e-usar-no-windows-guia-completo-e-arquivos-necessários) •
-[Por que Código Disponível?](#-por-que-o-opit-core-tem-código-aberto-sob-polyform-shield-100) •
+[Por que Código Disponível?](#-por-que-o-opit-core-tem-código-disponível-sob-polyform-strict-100) •
 [Arquitetura e Módulos](#-arquitetura-e-módulos) •
 [Diferenciais Técnicos](#-três-compromissos-de-engenharia) •
 [Como Compilar](#-como-compilar-do-código-fonte) •
@@ -115,18 +115,18 @@ Diferente de "otimizadores" que aplicam tweaks cegos no Registro do Windows e de
 
 ---
 
-## 🔓 Por que o Opit-Core tem código aberto sob PolyForm Shield 1.0.0?
+## 🔓 Por que o Opit-Core tem código disponível sob PolyForm Strict 1.0.0?
 
 O Opit-Core nasceu originalmente como um software comercial fechado: exigia login, validava assinatura em servidor remoto, vinculava a licença ao hardware (*fingerprint*) e bloqueava recursos. Em novembro de 2026, toda essa camada de restrição e comunicação com servidores foi **definitivamente arrancada da árvore de código**.
 
-A razão dessa decisão é direta e transparente: **na era atual da Inteligência Artificial, a obscuridade de binários deixou de existir.** Tentar proteger um software local com DRM invasivo só prejudica o usuário legítimo. Ao mesmo tempo, liberar o código sob uma licença permissiva permite que terceiros simplesmente empacotem e vendam o trabalho alheio como se fosse deles.
+A razão dessa decisão é direta e transparente: **na era atual da Inteligência Artificial, a obscuridade de binários deixou de existir.** Tentar proteger um software local com DRM invasivo só prejudica o usuário legítimo. Ao mesmo tempo, liberar o código sob licenças permissivas permite que terceiros redistribuam, modifiquem ou vendam o trabalho alheio.
 
-Por isso, adotamos o modelo **Source-Available** com a **[PolyForm Shield License 1.0.0](LICENSE)**:
+Por isso, adotamos o modelo **Source-Available** com a **[PolyForm Strict License 1.0.0](LICENSE)**:
 
-- **100% transparente e gratuito para você usar:** Qualquer pessoa ou empresa pode baixar, usar, auditar o código-fonte (confirmando zero telemetria) e até modificar para uso próprio/interno sem pagar nada.
-- **Proteção comercial exclusiva (Cláusula *Noncompete*):** Terceiros **não podem vender**, cobrar assinatura ou lançar qualquer produto ou serviço concorrente baseado no Opit-Core (seja pago ou gratuito, em qualquer linguagem ou sistema operacional). **Somente a ACSTCLab** tem o direito de comercializar o Opit-Core e o ecossistema `Opit-*`.
+- **100% transparente e gratuito para uso pessoal/não comercial:** Qualquer pessoa (para uso pessoal, estudo, testes ou hobby) e instituições sem fins lucrativos, educacionais ou governamentais podem baixar, usar e auditar o código-fonte (confirmando zero telemetria) sem pagar nada.
+- **Proteção comercial e autoral máxima:** Terceiros **não podem usar comercialmente**, **não podem redistribuir** e **não podem criar versões modificadas ou derivadas**. **Somente a ACSTC Lab** tem o direito de comercializar, distribuir oficialmente e licenciar o Opit-Core e o ecossistema `OPIT`.
 
-**Gratuito para uso e *donationware*.** Não existe telemetria nem trava escondida.
+**Gratuito para uso pessoal não comercial e *donationware*.** Não existe telemetria nem trava escondida.
 
 ---
 
@@ -289,8 +289,8 @@ Opit-Core/
 ├── CONTRIBUTING.md         # Regras de contribuição e Acordo de Licença de Contribuidor (CLA)
 ├── COPYRIGHT.md            # Declaração de autoria, titularidade e cadeia de direitos
 ├── IP_POLICY.md            # Política de propriedade intelectual e isenção de garantia
-├── LICENSE                 # Texto integral da PolyForm Shield License 1.0.0
-├── NOTICE                  # Avisos obrigatórios (Required Notice e Licensor Line of Business)
+├── LICENSE                 # Texto integral da PolyForm Strict License 1.0.0
+├── NOTICE                  # Avisos de direitos autorais e família OPIT
 ├── SECURITY.md             # Política de segurança e verificação de integridade
 ├── SHA256SUMS.txt          # Hashes SHA-256 oficiais dos pacotes de lançamento
 ├── THIRD_PARTY_NOTICES.md  # Licenças e avisos de componentes de terceiros
@@ -304,23 +304,23 @@ Opit-Core/
 ## ⚖️ Licença, Marcas e Direitos
 
 ```text
-Required Notice: Copyright (C) 2026 ACSTC Lab — Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
-Required Notice: Licensed under PolyForm Shield License 1.0.0 (https://polyformproject.org/licenses/shield/1.0.0)
-Required Notice: Official repository https://github.com/alexcruix/Opit-Core
-Licensor Line of Business: OPIT software family — Opit-Core, Opit-AIEngine, Opit-Graphics, Opit-Graphic, Opit-Grafic, Opit-Sound (adaptive hardware, performance, power, thermal, fan, process and service orchestration and optimization tools for Windows, Linux/Ubuntu, macOS and other operating systems) — ACSTC Lab (alexcstos@gmail.com)
+Copyright (C) 2026 ACSTC Lab — Alex de Campos Santos Toledo Camilo (alexcstos@gmail.com)
+Licensed under PolyForm Strict License 1.0.0 (https://polyformproject.org/licenses/strict/1.0.0)
+Official repository: https://github.com/alexcruix/Opit-Core
+OPIT Software Family: Opit-Core, Opit-AIEngine, Opit-Graphics, Opit-Graphic, Opit-Grafic, Opit-Sound — ACSTC Lab
 ```
 
-### Resumo prático da PolyForm Shield License 1.0.0
+### Resumo prático da PolyForm Strict License 1.0.0
 
 | ✅ O que você PODE fazer gratuitamente | 🚫 O que é PROIBIDO a terceiros (Exclusivo da ACSTC Lab) |
 | :--- | :--- |
-| ✔️ **Usar gratuitamente** em computadores pessoais ou dentro de empresas (uso interno). | ❌ **Proibido vender ou oferecer produto concorrente** (pago ou gratuito) usando este código ou derivados (*Noncompete*). |
-| ✔️ **Estudar e auditar** todo o código-fonte (confirmando zero telemetria). | ❌ **Proibido lançar versões concorrentes** em outra linguagem, interface ou sistema operacional (Windows, Linux/Ubuntu, macOS). |
-| ✔️ **Modificar o código** para uso próprio ou interno, sem concorrer com o Opit-Core. | ❌ **Proibido usar as marcas** `"OPIT"`, `"Opit-Core"`, `"Opit-AIEngine"`, `"Opit-Graphics"` / `"Opit-Grafic"`, `"Opit-Sound"`, `"ACSTC Lab"` ou os logotipos oficiais. |
-| ✔️ **Compartilhar** preservando a licença e os avisos do arquivo [`NOTICE`](NOTICE). | ❌ **Proibido exigir garantias, suporte ou responsabilização** por danos de hardware, tela azul ou perda de dados (*No Liability*). |
+| ✔️ **Usar gratuitamente** para fins estritamente **pessoais e não comerciais** (estudo, pesquisa, testes, hobby, entretenimento privado). | ❌ **Proibido qualquer uso comercial** (incluindo venda, assinatura ou uso comercial em empresas sem licença da ACSTC Lab). |
+| ✔️ **Usar em instituições sem fins lucrativos**, educacionais, de pesquisa pública ou governamentais. | ❌ **Proibido distribuir ou redistribuir** cópias do programa ou do código-fonte. |
+| ✔️ **Ler e auditar** todo o código-fonte para verificar segurança e zero telemetria. | ❌ **Proibido criar versões modificadas ou obras derivadas** baseadas neste código. |
+| ✔️ **Compilar para uso pessoal próprio** seguindo o guia de build. | ❌ **Proibido usar as marcas** `"OPIT"`, `"Opit-Core"`, `"Opit-AIEngine"`, `"Opit-Graphics"` / `"Opit-Grafic"`, `"Opit-Sound"`, `"ACSTC Lab"` ou exigir garantias/responsabilização (*No Liability*). |
 
 > [!IMPORTANT]
-> **Exclusividade Comercial da ACSTC Lab:** Somente a **ACSTC Lab** tem direito de comercializar o Opit-Core, lançar versões pagas/por assinatura ou conceder licenças comerciais separadas.
+> **Exclusividade Comercial da ACSTC Lab:** Somente a **ACSTC Lab** tem direito de comercializar, distribuir oficialmente, modificar e conceder licenças comerciais do Opit-Core.
 > Consulte a documentação completa de governança: [`LICENSE`](LICENSE) • [`NOTICE`](NOTICE) • [`COPYRIGHT.md`](COPYRIGHT.md) • [`TRADEMARKS.md`](TRADEMARKS.md) • [`IP_POLICY.md`](IP_POLICY.md) • [`SECURITY.md`](SECURITY.md) • [`VERSION_HISTORY.md`](VERSION_HISTORY.md).
 
 > [!NOTE]
@@ -356,5 +356,5 @@ Se o programa ajudou a reduzir a temperatura do seu computador, silenciou suas v
 ---
 
 <div align="center">
-  <sub>Desenvolvido com rigor em C++17 por <b>ACSTCLab</b> • Distribuído sob a licença <b>PolyForm Shield 1.0.0</b>.</sub>
+  <sub>Desenvolvido com rigor em C++17 por <b>ACSTC Lab</b> • Distribuído sob a licença <b>PolyForm Strict 1.0.0</b>.</sub>
 </div>

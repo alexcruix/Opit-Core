@@ -1,6 +1,6 @@
 # Avisos de Componentes de Terceiros — Opit-Core
 
-O código principal do **Opit-Core** (motor adaptativo, orquestrador, interface Win32, governadores e segurança) é de autoria da **ACSTC Lab** e distribuído sob a **[PolyForm Shield License 1.0.0](LICENSE)**.
+O código principal do **Opit-Core** (motor adaptativo, orquestrador, interface Win32, governadores e segurança) é de autoria da **ACSTC Lab** e distribuído sob a **[PolyForm Strict License 1.0.0](LICENSE)**.
 
 Este projeto utiliza os seguintes componentes de terceiros, cada um regido por sua respectiva licença original:
 

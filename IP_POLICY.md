@@ -6,13 +6,16 @@
 
 ---
 
-## 1. Modelo de Licenciamento (Source-Available / Exclusividade Comercial)
+## 1. Modelo de Licenciamento (Source-Available / PolyForm Strict 1.0.0)
 
-O **Opit-Core** adota a **[PolyForm Shield License 1.0.0](LICENSE)**, uma licença de código-fonte disponível (*source-available*) com cláusula de não concorrência (*Noncompete*):
+O **Opit-Core** adota a **[PolyForm Strict License 1.0.0](LICENSE)** (`https://polyformproject.org/licenses/strict/1.0.0`), uma licença restritiva de código-fonte disponível (*source-available*):
 
-1. **Uso gratuito para usuários e empresas:** Qualquer pessoa física ou jurídica pode usar, auditar e modificar o Opit-Core gratuitamente para uso próprio ou interno.
-2. **Proibição de exploração concorrente por terceiros:** É proibido a terceiros usar este código (ou derivados) para vender, cobrar assinatura ou distribuir qualquer produto ou serviço concorrente com o Opit-Core ou com a linha de negócios da ACSTC Lab declarada em [`NOTICE`](NOTICE) — independentemente da linguagem de programação, interface, arquitetura ou sistema operacional (Seção *Competition* da licença).
-3. **Exclusividade de comercialização:** Como única titular dos direitos autorais, **somente a ACSTC Lab** pode comercializar o Opit-Core, lançar versões pagas/por assinatura ou conceder licenças comerciais separadas.
+1. **Uso gratuito não comercial:** Permitido exclusivamente para fins não comerciais (uso pessoal, estudo, pesquisa, testes, entretenimento privado, hobbies e instituições sem fins lucrativos, educacionais, de pesquisa pública, saúde/segurança pública ou governamentais).
+2. **Proibição de uso comercial, redistribuição e derivação por terceiros:** A licença **não autoriza** terceiros a:
+   - usar o software para qualquer finalidade comercial (nem mesmo uso comercial interno em empresas sem licença comercial da ACSTC Lab);
+   - distribuir ou redistribuir cópias do software (gratuitas ou pagas);
+   - criar versões modificadas ou obras derivadas baseadas neste código.
+3. **Exclusividade absoluta da ACSTC Lab:** Como única titular dos direitos autorais, **somente a ACSTC Lab** pode comercializar, distribuir oficialmente, lançar edições pagas/por assinatura ou conceder licenças comerciais separadas.
 
 ## 2. Política de Contribuições Externas
 
@@ -20,11 +23,11 @@ Para preservar a integridade da cadeia de direitos e a exclusividade comercial d
 
 ## 3. Política de Marcas
 
-As regras sobre os nomes **OPIT**, **Opit-Core**, **Opit-AIEngine**, **Opit-Graphics** / **Opit-Grafic**, **Opit-Sound**, **ACSTC Lab** e sobre os logotipos do projeto constam em [`TRADEMARKS.md`](TRADEMARKS.md). A licença de código não concede direitos sobre marcas.
+As regras sobre os nomes **OPIT**, **Opit-Core**, **Opit-AIEngine**, **Opit-Graphics** / **Opit-Grafic**, **Opit-Sound**, **ACSTC Lab** e sobre os logotipos do projeto constam em [`TRADEMARKS.md`](TRADEMARKS.md). A licença de código não concede direitos sobre marcas (Seção *No Other Rights*).
 
 ## 4. Isenção de Garantia e Limitação de Responsabilidade
 
-Complementando a seção **No Liability** da PolyForm Shield 1.0.0 e **na extensão máxima permitida pela legislação aplicável**:
+Complementando a seção **No Liability** da PolyForm Strict 1.0.0 e **na extensão máxima permitida pela legislação aplicável**:
 
 1. O software é fornecido gratuitamente, **"no estado em que se encontra" (*AS IS*)**, sem garantias de qualquer tipo. O usuário assume integralmente o risco do uso no próprio computador.
 2. Nem o autor nem a **ACSTC Lab** respondem por danos decorrentes do uso ou da impossibilidade de uso do programa, incluindo:
@@ -43,4 +46,4 @@ Cada lançamento oficial da ACSTC Lab é acompanhado de:
 
 ## 6. Contato para Licenciamento Comercial
 
-Empresas interessadas em licenciamento comercial, distribuição autorizada ou uso fora dos termos gratuitos da PolyForm Shield 1.0.0 devem entrar em contato pelo e-mail: **`alexcstos@gmail.com`**.
+Empresas ou interessados em licenciamento comercial, distribuição autorizada ou uso fora dos termos gratuitos da PolyForm Strict 1.0.0 devem entrar em contato pelo e-mail: **`alexcstos@gmail.com`**.

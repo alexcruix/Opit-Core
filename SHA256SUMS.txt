@@ -4,10 +4,10 @@
 # Autor: Alex de Campos Santos Toledo Camilo
 # Versao: 8.2.0
 # Data de publicacao: 2026-11-22
-# Licenca: PolyForm Shield License 1.0.0 (https://polyformproject.org/licenses/shield/1.0.0)
+# Licenca: PolyForm Strict License 1.0.0 (https://polyformproject.org/licenses/strict/1.0.0)
 # Repositorio oficial: https://github.com/alexcruix/Opit-Core
 
-eb557d51a65ea5338beb1d1552fba8b455a3dafa5f2ff4090fc190349d5a6c1f  Opit-Core-8.2.0-x64.zip
-64b5ff7dcd703ca10b364ab1588b3a17c2d06caec57fd4cb71c8e4cadcd61e98  Opit-Core-8.2.0-x86.zip
-32d6981f54afb3886ced5411d343ddc56ae8e5ece37b0a55fb06c7a6553258dd  Opit-Core-8.2.0-x64/Opit-Core.exe
-d402bbf122610f70dd69b67ce7384fa37f3e184e71133c901fbe23577bcab29a  Opit-Core-8.2.0-x86/Opit-Core.exe
+1f713f9562f78a269fc79f1f565f88bdf341c2899bb815ceaa9a597e485b6ee1  Opit-Core-8.2.0-x64.zip
+21854b99752f933629f951dd63eed5ef915e5abaaa3a24431d2fd584c0a330d9  Opit-Core-8.2.0-x86.zip
+1528384260f8843cc44d375d146d5e9c7a0a92bb90b7f93f6bf95ad561fec0d2  Opit-Core-8.2.0-x64/Opit-Core.exe
+d0b8e20ce23fdeeca36a66c93d36d9330b57f6a396ed60e062a98d9548d9c99f  Opit-Core-8.2.0-x86/Opit-Core.exe

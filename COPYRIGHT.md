@@ -18,14 +18,14 @@ Todo o código-fonte original, arquitetura, documentação, recursos visuais e a
 
 ## Licenciamento Oficial
 
-O **Opit-Core** é disponibilizado sob a **[PolyForm Shield License 1.0.0](LICENSE)** (`https://polyformproject.org/licenses/shield/1.0.0`), com os avisos obrigatórios definidos em [`NOTICE`](NOTICE).
+O **Opit-Core** é disponibilizado sob a **[PolyForm Strict License 1.0.0](LICENSE)** (`https://polyformproject.org/licenses/strict/1.0.0`).
 
-- Qualquer pessoa ou organização pode usar, estudar e modificar o código gratuitamente para uso próprio ou interno.
-- **É proibido a terceiros** vender, cobrar assinatura ou oferecer qualquer produto ou serviço concorrente usando este código ou derivados.
-- **Somente a ACSTC Lab** detém o direito de comercializar o Opit-Core ou conceder licenças comerciais separadas.
+- **Uso permitido:** Uso estritamente **pessoal e não comercial** (estudo, pesquisa, entretenimento privado, hobbies e organizações sem fins lucrativos/educacionais/governamentais).
+- **Proibido a terceiros:** Uso comercial, redistribuição do software e criação de modificações ou obras derivadas.
+- **Exclusividade:** **Somente a ACSTC Lab** detém o direito de comercializar, distribuir oficialmente, modificar ou conceder licenças comerciais separadas do Opit-Core.
 
 ## Cadeia de Direitos e Componentes de Terceiros
 
-- Todo o código em `src/`, `tests/` e `scripts/` é obra original da **ACSTC Lab**, identificado com cabeçalho `SPDX-License-Identifier: PolyForm-Shield-1.0.0` e `Required Notice:`.
+- Todo o código em `src/`, `tests/` e `scripts/` é obra original da **ACSTC Lab**, identificado com cabeçalho `SPDX-License-Identifier: LicenseRef-PolyForm-Strict-1.0.0` e aviso de Copyright.
 - Componentes de terceiros embutidos ou integrados opcionalmente em tempo de execução (`nlohmann/json`, `SQLite3`, `LibreHardwareMonitorLib`) mantêm os direitos e licenças de seus respectivos autores, conforme discriminado em [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 - Contribuições externas somente são incorporadas mediante aceite expresso do Acordo de Licença de Contribuidor (CLA) em [`CONTRIBUTING.md`](CONTRIBUTING.md).
